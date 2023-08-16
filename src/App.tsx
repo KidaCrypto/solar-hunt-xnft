@@ -125,7 +125,6 @@ function App() {
         return;
       }
       
-      console.log(hunts)
       setHistory(hunts);
     }
 
@@ -158,7 +157,7 @@ function App() {
     <RecoilRoot>
       <NavigationContainer>
         <AddressContext.Provider value={{
-          history: [],
+          history,
           craftables: [], // address owned craftables
           loots: [], // address owned loots
           monsters: [], // address owned monsters

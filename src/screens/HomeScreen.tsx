@@ -3,7 +3,7 @@ import { Text, FlatList, Image } from "react-native";
 import { Screen } from "../components/Screen";
 import { useContext } from "react";
 import { MetadataContext, AddressContext } from "../App";
-import { convertToHumanReadable } from "../utils/common";
+import { convertToHumanReadable, getBaseUrl } from "../utils/common";
 import { Button, View, TouchableOpacity } from 'react-native';
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { newHunt } from "../helpers/hunt";
@@ -84,6 +84,7 @@ export function HomeScreen() {
         minHeight: '90%',
         overflow: 'hidden',
         backgroundColor: '#fffef0',
+        padding: 20,
       }}>
         {/** Inner shadows */}
         <View 
@@ -150,7 +151,6 @@ export function HomeScreen() {
         
         <View style={{ 
           padding: 10,
-          margin: 20,
           alignItems: 'center',
           justifyContent: 'center',
           borderRadius: 5,
@@ -168,12 +168,33 @@ export function HomeScreen() {
             </View>
           </TouchableOpacity>
         </View>
+
+        <FlatList
+          style={{ marginTop: 20, paddingTop: 30, paddingBottom: 100 }}
+          data={addressContext.history}
+          keyExtractor={(item) => `hunt_${item.id}`}
+          showsVerticalScrollIndicator={false}
+          renderItem={({ item, index }) => (
+            <View style={{
+              marginBottom: 35,
+              width: '100%',
+            }}>
+              <Text style={{ fontSize: 8 }}>{convertToHumanReadable(item.created_at)}</Text>
+              <View style={{
+                flexDirection: index % 2 === 1? 'row' : 'row-reverse',
+                alignItems: 'center',
+                marginTop: 5,
+              }}>
+                <Text style={{ fontSize: 11 }}>Encountered <Text style={{fontWeight: 'bold'}}>{item.is_shiny? '*' : ''}{item.monster.name}{item.is_shiny? '*' : ''}</Text> worth <Text style={{fontWeight: 'bold'}}>{item.gold}</Text> gold and <Text style={{fontWeight: 'bold'}}>{item.exp}</Text> exp {item.caught? ', after a gruesome fight, it was felled.' : 'but alas, it escaped our grasp.'}</Text>
+                <Image
+                  source={{ uri: `${getBaseUrl()}/assets/sprites/base${item.is_shiny? '_shiny' : ''}/${item.monster.img_file}` }}
+                  style={{ height: 50, width: 50, marginLeft: index % 2 === 1? 10 : 0, marginRight: index % 2 === 1? 0 : 10,  }}
+                />
+              </View>
+            </View>
+          )}
+        />
       </View>
-      <FlatList
-        data={addressContext.history}
-        keyExtractor={(item) => `hunt_${item.id}`}
-        renderItem={({ item }) => <Text>{convertToHumanReadable(item.created_at)}</Text>}
-      />
     </Screen>
   );
 }
