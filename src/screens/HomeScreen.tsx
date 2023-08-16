@@ -6,7 +6,7 @@ import { MetadataContext, AddressContext } from "../App";
 import { convertToHumanReadable, getBaseUrl } from "../utils/common";
 import { Button, View, TouchableOpacity } from 'react-native';
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { newHunt } from "../helpers/hunt";
+import { newHunt } from "../helpers/api";
 
 const forest_bg = require('../../assets/bg_blur/grasslands_bg.png');
 
@@ -14,7 +14,6 @@ export function HomeScreen() {
   const addressContext = useContext(AddressContext);
   const metadataContext = useContext(MetadataContext);
 
-  console.log(addressContext.history)
   return (
     <Screen>
       <View style={{
@@ -56,7 +55,7 @@ export function HomeScreen() {
               alignItems: 'flex-start',
               justifyContent: 'center'
             }}>
-              <Text style={{ fontSize: 10 }}>900 Gold</Text>
+              <Text style={{ fontSize: 10 }}>{addressContext.tokens.gold} Gold</Text>
             </View>
             <View style={{
               position: 'absolute',
@@ -74,7 +73,7 @@ export function HomeScreen() {
               justifyContent: 'center'
             }}>
               <Text style={{ fontSize: 10 }}>
-                900 EXP
+                {addressContext.tokens.exp} EXP
               </Text>
               {/** Progress bar here */}
             </View>

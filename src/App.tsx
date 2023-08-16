@@ -10,7 +10,7 @@ import { ExamplesScreens } from "./screens/ExamplesScreen";
 import { HomeScreen } from "./screens/HomeScreen";
 import { TokenListNavigator } from "./screens/TokenNavigator";
 import { createContext, useContext, useEffect, useState } from "react";
-import { Hunt, HuntResult, getHuntHistory } from "./helpers/hunt";
+import { Hunt, HuntResult, getAddressTokens, getHuntHistory } from "./helpers/api";
 import { usePublicKeys } from "./hooks/xnft-hooks";
 
 const Tab = createBottomTabNavigator();
@@ -110,6 +110,7 @@ function App() {
 
   const [ history, setHistory ] = useState<Hunt[]>([]);
   const [ account, setAccount ] = useState("");
+  const [ tokens, setTokens ] = useState({ gold: 0, exp: 0 });
   const accounts = usePublicKeys();
   
   useEffect(() => {
@@ -118,14 +119,27 @@ function App() {
         return;
       }
 
-      let hunts = await getHuntHistory({ account, isPublicKey: true });
+      let params = { account, isPublicKey: true };
+
+      let [hunts, tokens] = await Promise.all([
+        getHuntHistory(params),
+        getAddressTokens(params),
+      ]);
 
       if(typeof hunts === "string") {
         setHistory([]);
+        setTokens({gold: 0, exp: 0});
+        return;
+      }
+
+      if(typeof tokens === "string") {
+        setHistory([]);
+        setTokens({gold: 0, exp: 0});
         return;
       }
       
       setHistory(hunts);
+      setTokens(tokens);
     }
 
     getData();
@@ -161,10 +175,7 @@ function App() {
           craftables: [], // address owned craftables
           loots: [], // address owned loots
           monsters: [], // address owned monsters
-          tokens: {
-            gold: 0, // address owned gold tokens
-            exp: 0, // address owned exp tokens
-          },
+          tokens,
           account
         }}>
           <TabNavigator />
