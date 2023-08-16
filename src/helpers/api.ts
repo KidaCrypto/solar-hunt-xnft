@@ -1,6 +1,7 @@
 import axios from '../services/axios';
+import { ReadApiAsset } from './onchain';
 
-export type BaseHuntParams = {
+export type BaseParams = {
     account: string; // email or public key
     isPublicKey: boolean;
 }
@@ -47,7 +48,6 @@ export type MonsterLoot = {
     loot_chance: number;
 }
 
-
 export type HuntLoot = {
     hunt_id: number;
     loot_id: number;
@@ -56,7 +56,7 @@ export type HuntLoot = {
 
 export type HuntResult = "Failed to catch" | "Caught";
 
-export const newHunt = async(params: BaseHuntParams) => {
+export const newHunt = async(params: BaseParams) => {
     try {
         let res = await axios.post<ApiResult<HuntResult>>('/hunt', params);
 
@@ -76,7 +76,7 @@ export const newHunt = async(params: BaseHuntParams) => {
     }
 }
 
-export const getHuntHistory = async(params: BaseHuntParams) => {
+export const getHuntHistory = async(params: BaseParams) => {
     try {
         let res = await axios.post<ApiResult<Hunt[]>>('/hunt/history', params);
 
@@ -94,5 +94,44 @@ export const getHuntHistory = async(params: BaseHuntParams) => {
     catch (e: any){
         return "Error: " + e.response.message;
     }
+}
 
+export const getAddressTokens = async(params: BaseParams) => {
+    try {
+        let res = await axios.post<ApiResult<{ gold: number; exp: number ;}>>('/onchain/tokens', params);
+
+        if(!res.data.success) {
+            return "Error";
+        }
+
+        if(!res.data.data) {
+            return "Error";
+        }
+
+        return res.data.data;
+    }
+
+    catch (e: any){
+        return "Error: " + e.response.message;
+    }
+}
+
+export const getNfts = async(params: BaseParams) => {
+    try {
+        let res = await axios.post<ApiResult<ReadApiAsset[]>>('/onchain/nfts', params);
+
+        if(!res.data.success) {
+            return "Error";
+        }
+
+        if(!res.data.data) {
+            return "Error";
+        }
+
+        return res.data.data;
+    }
+
+    catch (e: any){
+        return "Error: " + e.response.message;
+    }
 }
