@@ -15,6 +15,13 @@ xnft-bundle.zip
 # macOS
 .DS_Store
 
+*.png
+*.jpg
+*.gif
+*.webp
+*.mp3
+*.jpeg
+
 .env
 .env.production
 .env.development
