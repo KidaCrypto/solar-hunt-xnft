@@ -2,31 +2,30 @@ import { Text, FlatList } from "react-native";
 import tw from "twrnc";
 
 import { Screen } from "../components/Screen";
+import { useContext } from "react";
+import { MetadataContext, AddressContext } from "../App";
+import { convertToHumanReadable } from "../utils/common";
+import { Button, View, TouchableWithoutFeedback } from 'react-native';
+import { newHunt } from "../helpers/hunt";
 
 export function HomeScreen() {
-  const features = [
-    "tailwind",
-    "haha",
-    "recoil",
-    "native styling",
-    "fetching code from an API",
-    "using a FlatList to render data",
-    "Image for both remote & local images",
-    "custom fonts",
-    "sign a transaction / message",
-    "theme hook with light/dark support",
-  ];
+  const addressContext = useContext(AddressContext);
+  const metadataContext = useContext(MetadataContext);
 
   return (
     <Screen>
-      <Text style={tw`mb-4`}>
-        You'll find several examples of how to build xNFTs using react-native:
-      </Text>
       <FlatList
-        data={features}
-        keyExtractor={(item) => item}
-        renderItem={({ item }) => <Text>- {item}</Text>}
+        data={addressContext.history}
+        keyExtractor={(item) => `hunt_${item.id}`}
+        renderItem={({ item }) => <Text>{convertToHumanReadable(item.created_at)}</Text>}
       />
+      <View style={{ position: 'absolute', top: 100, left: 10, right: 10 }}>
+        <TouchableWithoutFeedback 
+          onPress={() => newHunt({ account: addressContext.account, isPublicKey: true })}
+        >
+          <Text>New Hunt</Text>
+        </TouchableWithoutFeedback>
+      </View>
     </Screen>
   );
 }

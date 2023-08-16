@@ -27,14 +27,18 @@ export function usePublicKey(): PublicKey | undefined {
   return publicKey;
 }
 
-export function usePublicKeys(): { [key: string]: PublicKey }|undefined {
+export function usePublicKeys(): { [key: string]: string }|undefined {
   const didLaunch = useDidLaunch();
   const [publicKeys, setPublicKeys] = useState();
   useEffect(() => {
     if (didLaunch) {
+      // this event somehow is not emitted
       window.xnft.on("publicKeysUpdate", () => {
         setPublicKeys(window.xnft.publicKeys);
       });
+
+      // window.xnft.publicKeys only updates when changing wallets inside same profile
+      // changing accounts wont trigger
       setPublicKeys(window.xnft.publicKeys);
     }
   }, [didLaunch, setPublicKeys]);
