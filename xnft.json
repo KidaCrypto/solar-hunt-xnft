@@ -1,9 +1,9 @@
 {
-  "name": "xNFT Quickstart",
+  "name": "Solar Hunt",
   "version": "0.0.1",
   "storage": "",
-  "description": "React Native Example",
-  "website": "http://wao.gg",
+  "description": "Hunt monsters. Craft Items. Repeat.",
+  "website": "https://solar-hunt.kidas.app",
   "kind": "app",
   "icon": {
     "md": "./assets/icon.png"
