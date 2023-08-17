@@ -1,19 +1,19 @@
 import moment from 'moment';
 
 export const getBaseUrl = () => {
-    return process.env.BASE_URL;
+    return process.env.BASE_URL!;
 }
 
 export const getMonsterCollectionAddress = () => {
-    return process.env.MONSTER_COLLECTION_MINT_ADDRESS;
+    return process.env.MONSTER_COLLECTION_MINT_ADDRESS!;
 }
 
 export const getLootCollectionAddress = () => {
-    return process.env.LOOT_COLLECTION_MINT_ADDRESS;
+    return process.env.LOOT_COLLECTION_MINT_ADDRESS!;
 }
 
 export const getCraftableCollectionAddress = () => {
-    return process.env.CRAFTABLE_COLLECTION_MINT_ADDRESS;
+    return process.env.CRAFTABLE_COLLECTION_MINT_ADDRESS!;
 }
 
 // converts to day month year

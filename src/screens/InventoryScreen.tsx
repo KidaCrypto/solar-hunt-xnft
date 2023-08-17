@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
 import {
   View,
   Text,
@@ -6,6 +6,8 @@ import {
   Image,
   ActivityIndicator,
   Animated,
+  ScrollView,
+  StyleSheet,
 } from "react-native";
 import {
   createStackNavigator,
@@ -16,19 +18,112 @@ import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { Screen } from "../components/Screen";
 import { TokenRow } from "../components/TokenRow";
 import { AddressContext } from "../App";
+import { OnchainNFTDetails } from "../helpers/onchain";
+import { getBaseUrl } from "../utils/common";
+
+const town_bg = require('../../assets/bg_blur/town_bg.png');
 
 type RootStackParamList = {
   List: {};
   Detail: { id: string };
 };
 
+type TokenDetail = { 
+  count: number; 
+  uri: string; 
+};
+
 const Stack = createStackNavigator<RootStackParamList>();
+
+const TokenIcon = ({ item }: {item: TokenDetail}) => {
+  return (
+    <View style={styles.tokenIcon}>
+      <View style={styles.tokenCountContainer}>
+        <Text style={styles.tokenCount}>{ item.count }</Text>
+      </View>
+      <Image
+        source={{ uri: item.uri }}
+        style={{ height: 50, width: 50 }}
+      />
+    </View>
+  )
+}
+
+const SkillIcon = ({ item }: {item: TokenDetail}) => {
+  return (
+    <View style={styles.skillIcon}>
+      <View style={styles.skillCountContainer}>
+        <Text style={styles.skillCount}>{ item.count }</Text>
+      </View>
+      <Image
+        source={{ uri: item.uri }}
+        style={{ height: 60, width: 60 }}
+      />
+    </View>
+  )
+}
 
 function List({
   navigation,
 }: NativeStackScreenProps<RootStackParamList, "List">) {
   const addressContext = useContext(AddressContext);
-  console.log(addressContext.loots);
+  
+  const monsters = useMemo(() => {
+    let ret: { [name: string]: TokenDetail } = {};
+
+    // do some refining
+    for(const item of addressContext.monsters) {
+        let name = item.metadata.name;
+        let uri = item.metadata.image.replace("https://solar-hunt.kidas.app", getBaseUrl());
+        if(!ret[name]) {
+          ret[name] = {
+            count: 0,
+            uri,
+          };
+        }
+
+        ret[name].count++;
+    }
+    return ret;
+  }, [ addressContext.monsters ]);
+
+  const loots = useMemo(() => {
+    let ret: { [name: string]: TokenDetail } = {};
+
+    // do some refining
+    for(const item of addressContext.loots) {
+        let name = item.metadata.name;
+        let uri = item.metadata.image.replace("https://solar-hunt.kidas.app", getBaseUrl());
+        if(!ret[name]) {
+          ret[name] = {
+            count: 0,
+            uri,
+          };
+        }
+
+        ret[name].count++;
+    }
+    return ret;
+  }, [ addressContext.loots ]);
+
+  const craftables = useMemo(() => {
+    let ret: { [name: string]: TokenDetail } = {};
+
+    // do some refining
+    for(const item of addressContext.craftables) {
+        let name = item.metadata.name;
+        let uri = item.metadata.image.replace("https://solar-hunt.kidas.app", getBaseUrl());
+        if(!ret[name]) {
+          ret[name] = {
+            count: 0,
+            uri,
+          };
+        }
+
+        ret[name].count++;
+    }
+    return ret;
+  }, [ addressContext.craftables ]);
 
   const handlePressTokenRow = (id: string) => {
     navigation.push("Detail", { id });
@@ -42,15 +137,62 @@ function List({
 
   return (
     <Screen>
-      <FlatList
-        style={{ flex: 1 }}
-        data={[]}
-        keyExtractor={(item, index) => index.toString()}
-        ItemSeparatorComponent={ItemSeparatorComponent}
-        renderItem={({ item }) => {
-          return null;
-        }}
-      />
+      <View style={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        zIndex: -1,
+      }}>
+        <Image
+          source={town_bg}
+          style={{ height: '100%' }}
+        />
+      </View>
+      <ScrollView
+        scrollEnabled={true}
+        style={{ maxHeight: '100vh', paddingBottom: 100 }}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* monsters */}
+        <Text style={styles.title}>MONSTERS</Text>
+        <FlatList
+          numColumns={5}
+          style={styles.flatlist}
+          data={Object.keys(monsters)}
+          keyExtractor={(item, index) => index.toString() + '_monster'}
+          showsVerticalScrollIndicator={false}
+          renderItem={({ item }) => {
+            return <TokenIcon item={monsters[item]}/>;
+          }}
+        />
+        {/* loots */}
+        <Text style={[styles.title, { marginTop: 30 }]}>LOOTS</Text>
+        <FlatList
+          numColumns={5}
+          style={styles.flatlist}
+          data={Object.keys(loots)}
+          keyExtractor={(item, index) => index.toString() + '_loots'}
+          showsVerticalScrollIndicator={false}
+          renderItem={({ item }) => {
+            return <SkillIcon item={loots[item]}/>;
+          }}
+        />
+        {/* craftables */}
+        <Text style={[styles.title, { marginTop: 30 }]}>CRAFTS</Text>
+        <FlatList
+          numColumns={5}
+          style={styles.flatlist}
+          data={Object.keys(craftables)}
+          keyExtractor={(item, index) => index.toString() + '_crafts'}
+          showsVerticalScrollIndicator={false}
+          renderItem={({ item }) => {
+            return <SkillIcon item={craftables[item]}/>;
+          }}
+          contentContainerStyle={{ alignItems: 'center', justifyContent: 'center', width: '100%' }}
+        />
+      </ScrollView>
     </Screen>
   );
 }
@@ -103,6 +245,82 @@ const forSlide: StackCardStyleInterpolator = ({
     },
   };
 };
+
+const styles = StyleSheet.create({
+  flatlist: { 
+    flex: 1, 
+    borderWidth: 3, 
+    borderRadius: 10, 
+    marginTop: 10, 
+    minHeight: '40vh',
+    backgroundColor: 'white',
+    paddingBottom: '1.6%',
+  },
+  title: { 
+    letterSpacing: 5, 
+    marginTop: 15, 
+    marginRight: 20, 
+    color: "#4d4235",
+    fontWeight: 'bold',
+  },
+  tokenIcon: {
+    width: '18%',
+    aspectRatio: 1,
+    marginTop: '1.6%',
+    marginLeft: '1.6%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 5,
+    borderWidth: 1,
+    backgroundColor: 'rgba(0,0,0,0.3)',
+    overflow: 'hidden',
+  },
+  tokenCountContainer: {
+    position: 'absolute',
+    right: 1,
+    top: 1,
+    height: 15,
+    width: 15,
+    backgroundColor: 'rgba(255,255,255,0.8)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 3,
+  },
+  tokenCount: {
+    fontWeight: 'bold',
+    fontSize: 10,
+    color: 'black',
+  },
+  skillIcon: {
+    position: 'relative',
+    width: '18%',
+    aspectRatio: 1,
+    marginTop: '1.6%',
+    marginLeft: '1.6%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 5,
+    borderWidth: 1,
+    // backgroundColor: 'rgba(0,0,0,0.3)'
+    overflow: 'hidden',
+  },
+  skillCountContainer: {
+    position: 'absolute',
+    right: 1,
+    top: 1,
+    height: 15,
+    width: 15,
+    backgroundColor: 'rgba(255,255,255,0.8)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 3,
+  },
+  skillCount: {
+    fontWeight: 'bold',
+    fontSize: 10,
+    color: 'black',
+  },
+})
 
 export const InventoryScreen = () => {
   return (

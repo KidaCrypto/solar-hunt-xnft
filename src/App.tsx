@@ -3,12 +3,13 @@ import { RecoilRoot } from "recoil";
 import { ActivityIndicator, StyleSheet, View } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { MaterialCommunityIcons, Entypo } from "@expo/vector-icons";
 import { useFonts, Inter_900Black } from "@expo-google-fonts/dev";
 
 import { ExamplesScreens } from "./screens/ExamplesScreen";
 import { HomeScreen } from "./screens/HomeScreen";
 import { InventoryScreen } from "./screens/InventoryScreen";
+import { ShopScreen } from "./screens/ShopScreen";
 import { createContext, useContext, useEffect, useState } from "react";
 import { Hunt, HuntResult, getAddressTokens, getHuntHistory, getAddressNfts } from "./helpers/api";
 import { usePublicKeys } from "./hooks/xnft-hooks";
@@ -67,6 +68,19 @@ function TabNavigator() {
           tabBarIcon: ({ color, size, focused }) => (
             <View style={[styles.tabIcon, {backgroundColor: focused? '#cec2ae' : 'white'}]}>
               <MaterialCommunityIcons name="anvil" color={color} size={size} />
+            </View>
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="Shop"
+        component={ShopScreen}
+        options={{
+          headerShown: false,
+          tabBarLabel: "Tokens",
+          tabBarIcon: ({ color, size, focused }) => (
+            <View style={[styles.tabIcon, {backgroundColor: focused? '#cec2ae' : 'white'}]}>
+              <Entypo name="shop" color={color} size={size} />
             </View>
           ),
         }}
