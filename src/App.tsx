@@ -12,8 +12,7 @@ import { InventoryScreen } from "./screens/InventoryScreen";
 import { createContext, useContext, useEffect, useState } from "react";
 import { Hunt, HuntResult, getAddressTokens, getHuntHistory, getAddressNfts } from "./helpers/api";
 import { usePublicKeys } from "./hooks/xnft-hooks";
-import { getCraftableCollectionAddress, getLootCollectionAddress, getMonsterCollectionAddress } from "./utils/common";
-import { ReadApiAsset } from "./helpers/onchain";
+import { OnchainNFTDetails } from "./helpers/onchain";
 
 const Tab = createBottomTabNavigator();
 
@@ -79,9 +78,9 @@ function TabNavigator() {
 // might need to change to use reducers
 export const AddressContext = createContext<{
   history: Hunt[],
-  craftables: ReadApiAsset[];
-  loots: ReadApiAsset[];
-  monsters: ReadApiAsset[];
+  craftables: OnchainNFTDetails[];
+  loots: OnchainNFTDetails[];
+  monsters: OnchainNFTDetails[];
   tokens: {
     gold: number;
     exp: number;
@@ -112,9 +111,9 @@ function App() {
 
   const [ history, setHistory ] = useState<Hunt[]>([]);
   const [ account, setAccount ] = useState("");
-  const [ monsters, setMonsters ] = useState<ReadApiAsset[]>([]);
-  const [ loots, setLoots ] = useState<ReadApiAsset[]>([]);
-  const [ craftables, setCraftables ] = useState<ReadApiAsset[]>([]);
+  const [ monsters, setMonsters ] = useState<OnchainNFTDetails[]>([]);
+  const [ loots, setLoots ] = useState<OnchainNFTDetails[]>([]);
+  const [ craftables, setCraftables ] = useState<OnchainNFTDetails[]>([]);
   const [ tokens, setTokens ] = useState({ gold: 0, exp: 0 });
   const [ isLoading, setIsLoading ] = useState(true);
   const accounts = usePublicKeys();
@@ -127,54 +126,61 @@ function App() {
 
       let params = { account, isPublicKey: true };
 
-      let [hunts, tokens, nfts] = await Promise.all([
-        getHuntHistory(params),
-        getAddressTokens(params),
-        getAddressNfts(params),
-      ]);
+      try {
+        let [hunts, tokens, nfts] = await Promise.all([
+          getHuntHistory(params),
+          getAddressTokens(params),
+          getAddressNfts(params),
+        ]);
 
-      // 0.5s load time
-      setTimeout(() => {
+        // 0.5s load time
+        setTimeout(() => {
+          setIsLoading(false);
+        }, 500);
+  
+        if(typeof hunts === "string") {
+          setHistory([]);
+          setTokens({gold: 0, exp: 0});
+          setMonsters([]);
+          setLoots([]);
+          setCraftables([]);
+          return;
+        }
+  
+        if(typeof tokens === "string") {
+          setHistory([]);
+          setTokens({gold: 0, exp: 0});
+          setMonsters([]);
+          setLoots([]);
+          setCraftables([]);
+          return;
+        }
+  
+        if(typeof nfts === "string") {
+          setHistory([]);
+          setTokens({gold: 0, exp: 0});
+          setMonsters([]);
+          setLoots([]);
+          setCraftables([]);
+          return;
+        }
+        
+        setHistory(hunts);
+        setTokens(tokens);
+        setMonsters(nfts.monster ?? []);
+        setLoots(nfts.loot ?? []);
+        setCraftables(nfts.craftable ?? []);
+      }
+
+      catch (e){
+        setHistory([]);
+        setTokens({gold: 0, exp: 0});
+        setMonsters([]);
+        setLoots([]);
+        setCraftables([]);
         setIsLoading(false);
-      }, 500);
-
-      if(typeof hunts === "string") {
-        setHistory([]);
-        setTokens({gold: 0, exp: 0});
-        setMonsters([]);
-        setLoots([]);
-        setCraftables([]);
         return;
       }
-
-      if(typeof tokens === "string") {
-        setHistory([]);
-        setTokens({gold: 0, exp: 0});
-        setMonsters([]);
-        setLoots([]);
-        setCraftables([]);
-        return;
-      }
-
-      if(typeof nfts === "string") {
-        setHistory([]);
-        setTokens({gold: 0, exp: 0});
-        setMonsters([]);
-        setLoots([]);
-        setCraftables([]);
-        return;
-      }
-
-      console.log(hunts);
-      let monsters = nfts.filter(x => x.grouping[0].group_value === getMonsterCollectionAddress());
-      let loots = nfts.filter(x => x.grouping[0].group_value === getLootCollectionAddress());
-      let craftables = nfts.filter(x => x.grouping[0].group_value === getCraftableCollectionAddress());
-      
-      setHistory(hunts);
-      setTokens(tokens);
-      setMonsters(monsters);
-      setLoots(loots);
-      setCraftables(craftables);
     }
 
     getData();

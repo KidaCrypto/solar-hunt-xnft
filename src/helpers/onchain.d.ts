@@ -173,3 +173,32 @@ export type ReadApiRpcResponseError = {
   error: string;
   id: string;
 };
+export type MetaplexTrait = {
+  trait_type: string;
+  value: string;
+}
+
+export type MetaplexProperties = {
+  files: {
+      uri: string;
+      type: string;
+      cdn?: boolean;
+  }[];
+  category: string;
+}
+
+export type MetaplexStandard = {
+  name: string;
+  symbol: string;
+  description: string;
+  image: string;
+  animation_url?: string;
+  external_url?: string;
+  attributes: MetaplexTrait[];
+  properties?: MetaplexProperties;
+}
+
+export type OnchainNFTDetails = {
+    raw: ReadApiAsset;
+    metadata: MetaplexStandard;
+}

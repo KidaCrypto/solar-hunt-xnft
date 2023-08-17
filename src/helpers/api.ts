@@ -1,5 +1,5 @@
 import axios from '../services/axios';
-import { ReadApiAsset } from './onchain';
+import { OnchainNFTDetails, ReadApiAsset } from './onchain';
 
 export type BaseParams = {
     account: string; // email or public key
@@ -92,7 +92,7 @@ export const getHuntHistory = async(params: BaseParams) => {
     }
 
     catch (e: any){
-        return "Error: " + e.response.message;
+        return "Error: " + e.response;
     }
 }
 
@@ -113,14 +113,15 @@ export const getAddressTokens = async(params: BaseParams) => {
     }
 
     catch (e: any){
-        return "Error: " + e.response.message;
+        return "Error: " + e.response;
     }
 }
 
 // maybe get from wallet's rpc
 export const getAddressNfts = async(params: BaseParams) => {
     try {
-        let res = await axios.post<ApiResult<ReadApiAsset[]>>('/onchain/nfts', params);
+        // key = "monster" | "loot" | "craftable"
+        let res = await axios.post<ApiResult<{ [key: string]: OnchainNFTDetails[] }>>('/onchain/nfts', params);
 
         if(!res.data.success) {
             return "Error";
@@ -134,6 +135,6 @@ export const getAddressNfts = async(params: BaseParams) => {
     }
 
     catch (e: any){
-        return "Error: " + e.response.message;
+        return "Error: " + e.response;
     }
 }
