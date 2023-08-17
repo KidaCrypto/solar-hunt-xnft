@@ -1,6 +1,6 @@
 import { registerRootComponent } from "expo";
 import { RecoilRoot } from "recoil";
-import { ActivityIndicator, View } from "react-native";
+import { ActivityIndicator, StyleSheet, View } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
@@ -39,8 +39,8 @@ function TabNavigator() {
         options={{
           tabBarLabel: "Home",
           tabBarIcon: ({ color, size, focused }) => (
-            <View style={{ borderRadius: 50, backgroundColor: focused? 'lightblue' : 'white', padding: 10 }}>
-              <MaterialCommunityIcons name="account" color={color} size={size} />
+            <View style={[styles.tabIcon, {backgroundColor: focused? '#cec2ae' : 'white'}]}>
+              <MaterialCommunityIcons name="sword" color={color} size={size} />
             </View>
           ),
         }}
@@ -52,8 +52,8 @@ function TabNavigator() {
           headerShown: false,
           tabBarLabel: "Tokens",
           tabBarIcon: ({ color, size, focused }) => (
-            <View style={{ borderRadius: 50, backgroundColor: focused? 'lightblue' : 'white', padding: 10 }}>
-              <MaterialCommunityIcons name="account" color={color} size={size} />
+            <View style={[styles.tabIcon, {backgroundColor: focused? '#cec2ae' : 'white'}]}>
+              <MaterialCommunityIcons name="treasure-chest" color={color} size={size} />
             </View>
           ),
         }}
@@ -64,8 +64,8 @@ function TabNavigator() {
         options={{
           tabBarLabel: "Examples",
           tabBarIcon: ({ color, size, focused }) => (
-            <View style={{ borderRadius: 50, backgroundColor: focused? 'lightblue' : 'white', padding: 10 }}>
-              <MaterialCommunityIcons name="account" color={color} size={size} />
+            <View style={[styles.tabIcon, {backgroundColor: focused? '#cec2ae' : 'white'}]}>
+              <MaterialCommunityIcons name="anvil" color={color} size={size} />
             </View>
           ),
         }}
@@ -199,5 +199,15 @@ function App() {
     </RecoilRoot>
   );
 }
+
+const styles = StyleSheet.create({
+  tabIcon: { 
+    borderRadius: 50, 
+    padding: 10, 
+    // borderWidth: StyleSheet.hairlineWidth,
+    shadowColor: 'black',
+    shadowRadius: 5,
+  },
+})
 
 export default registerRootComponent(App);
