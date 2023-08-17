@@ -15,7 +15,7 @@ function LearnMoreLink({ url }: { url: string }) {
   return <Text onPress={() => Linking.openURL(url)}>Learn more</Text>;
 }
 
-export function ExamplesScreens() {
+export function CraftingScreen() {
   const [future, setFuture] = useRecoilState(testAtom);
 
   return (

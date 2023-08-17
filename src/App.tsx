@@ -6,7 +6,7 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { MaterialCommunityIcons, Entypo } from "@expo/vector-icons";
 import { useFonts, Inter_900Black } from "@expo-google-fonts/dev";
 
-import { ExamplesScreens } from "./screens/ExamplesScreen";
+import { CraftingScreen } from "./screens/CraftingScreen";
 import { HomeScreen } from "./screens/HomeScreen";
 import { InventoryScreen } from "./screens/InventoryScreen";
 import { ShopScreen } from "./screens/ShopScreen";
@@ -61,10 +61,10 @@ function TabNavigator() {
         }}
       />
       <Tab.Screen
-        name="Examples"
-        component={ExamplesScreens}
+        name="Crafting"
+        component={CraftingScreen}
         options={{
-          tabBarLabel: "Examples",
+          tabBarLabel: "Crafting",
           tabBarIcon: ({ color, size, focused }) => (
             <View style={[styles.tabIcon, {backgroundColor: focused? '#cec2ae' : 'white'}]}>
               <MaterialCommunityIcons name="anvil" color={color} size={size} />
