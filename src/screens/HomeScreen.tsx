@@ -1,15 +1,23 @@
-import { Text, FlatList, Image } from "react-native";
+// todo
+// pagination
+
+import { Text, FlatList, Image, LayoutAnimation } from "react-native";
 
 import { Screen } from "../components/Screen";
-import { useContext } from "react";
-import { MetadataContext, AddressContext } from "../App";
-import { convertToHumanReadable, getBaseUrl } from "../utils/common";
-import { Button, View, TouchableOpacity, StyleSheet } from 'react-native';
+import { useCallback, useContext, useEffect, useState } from "react";
+import { AddressContext } from "../App";
+import { convertToHumanReadable, getBaseUrl, runIfFunction, toLocaleDecimal } from "../utils/common";
+import { UIManager, View, TouchableOpacity, StyleSheet } from 'react-native';
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Hunt, newHunt } from "../helpers/api";
 import { LinearGradient } from "expo-linear-gradient";
+import moment from 'moment';
 
 const forest_bg = require('../../assets/bg_blur/grasslands_bg.png');
+const COOLDOWN = 60; // 60s
+
+// allow animation
+// UIManager.setLayoutAnimationEnabledExperimental && UIManager.setLayoutAnimationEnabledExperimental(true);
 
 const LootText = ({ item }: { item: Hunt }) => {
   let hasLoot = item.hunt_loots.length > 0;
@@ -27,7 +35,7 @@ const LootText = ({ item }: { item: Hunt }) => {
           prepend = "";
         }
   
-        else if(index > 2 && index === item.hunt_loots.length - 1) {
+        else if(index >= 2 && index === item.hunt_loots.length - 1) {
           prepend = ", and "
         }
   
@@ -44,8 +52,73 @@ const LootText = ({ item }: { item: Hunt }) => {
 }
 
 export function HomeScreen() {
+  const [ isLoading, setIsLoading ] = useState(true);
+  const [ isOnCooldown, setIsOnCooldown ] = useState(true);
+  const [ cd, setCd ] = useState(0);
   const addressContext = useContext(AddressContext);
-  const metadataContext = useContext(MetadataContext);
+  /* const setAnimation = () => {
+    LayoutAnimation.configureNext({
+      duration: 250,
+      update: {
+        type: LayoutAnimation.Types.easeIn,
+        springDamping: 0.7,
+      },
+    });
+    LayoutAnimation.configureNext({
+      duration: 500,
+      update: {
+        type: LayoutAnimation.Types.easeIn,
+        property: LayoutAnimation.Properties.scaleXY,
+        springDamping: 0.7,
+      },
+    });
+  } */
+
+  const startCountDown = useCallback((cd: number) => {
+    setCd(cd);
+    let interval = setInterval(() => {
+      cd--;
+      // precaution
+      if(cd < 0) {
+        setIsOnCooldown(false);
+        clearInterval(interval);
+        return;
+      }
+
+      setCd(cd);
+      
+      if(cd === 0) {
+        setIsOnCooldown(false);
+        clearInterval(interval);
+        return;
+      }
+    }, 1000);
+  }, []);
+
+  useEffect(() => {
+    // setAnimation();
+    if(addressContext.history.length === 0){
+      return;
+    }
+
+    // only load this the first time
+    if(!isLoading) {
+      console.log('already loaded');
+      return;
+    }
+
+    let lastHuntSecondsAgo = moment().diff(moment(addressContext.history[0].created_at), 's');
+    if(lastHuntSecondsAgo < COOLDOWN) {
+      setIsLoading(false);
+      setIsOnCooldown(true);
+      setCd(COOLDOWN - lastHuntSecondsAgo);
+      startCountDown(COOLDOWN - lastHuntSecondsAgo);
+      return;
+    }
+
+    setIsLoading(false);
+    setIsOnCooldown(false);
+  }, [isLoading, addressContext.history]);
 
   return (
     <Screen>
@@ -77,13 +150,13 @@ export function HomeScreen() {
               {/** diagonal shape */}
               <View style={styles.triangleCorner} />
               <View style={styles.triangleCornerInner} />
-              <Text style={{ fontSize: 10 }}>{addressContext.tokens.gold} Gold</Text>
+              <Text style={{ fontSize: 10 }}>{toLocaleDecimal(addressContext.tokens.gold, 2, 2)} Gold</Text>
             </View>
             <View style={[styles.playerTokens, { left: 15, top: 33, paddingLeft: 60 }]}>
               <View style={styles.triangleCorner} />
               <View style={styles.triangleCornerInner} />
               <Text style={{ fontSize: 10 }}>
-                {addressContext.tokens.exp} EXP
+                {toLocaleDecimal(addressContext.tokens.exp, 2, 2)} EXP
               </Text>
               {/** Progress bar here */}
             </View>
@@ -159,8 +232,15 @@ export function HomeScreen() {
         />
         
         <TouchableOpacity 
-          onPress={() => newHunt({ account: addressContext.account, isPublicKey: true })}
+          onPress={async() => {
+            setIsOnCooldown(true);
+            startCountDown(60);
+            await newHunt({ account: addressContext.account, isPublicKey: true });
+            await runIfFunction(addressContext.getData);
+            // setAnimation();
+          }}
           accessibilityRole="button"
+          disabled={isOnCooldown || isLoading}
         >
           <LinearGradient
             colors={['#ab875e', 'transparent', '#ab875e',]}
@@ -184,9 +264,17 @@ export function HomeScreen() {
               shadowRadius: 3,
               flex: 1,
             }}>
+              {
+                isOnCooldown && !isLoading?
+                <>
+                <Text style={{ letterSpacing: 5, marginLeft: 25, marginRight: 20, color: "#4d4235" }}>{cd}</Text>
+                </>:
+                <>
                 <MaterialCommunityIcons name="sword-cross" color='#4d4235' size={20} />
                 <Text style={{ letterSpacing: 5, marginLeft: 25, marginRight: 20, color: "#4d4235" }}>HUNT</Text>
                 <MaterialCommunityIcons name="sword-cross" color='#4d4235' size={20} />
+                </>
+              }
             </View>
           </LinearGradient>
         </TouchableOpacity>
@@ -206,6 +294,7 @@ export function HomeScreen() {
           data={addressContext.history}
           keyExtractor={(item) => `hunt_${item.id}`}
           showsVerticalScrollIndicator={false}
+          
           renderItem={({ item, index }) => {
             
             return (<View style={{

@@ -1,3 +1,6 @@
+// todo
+// flatlist optimization
+
 import { useContext, useEffect, useMemo, useState } from "react";
 import {
   View,
@@ -16,12 +19,10 @@ import {
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 
 import { Screen } from "../components/Screen";
-import { TokenRow } from "../components/TokenRow";
 import { AddressContext } from "../App";
-import { OnchainNFTDetails } from "../helpers/onchain";
 import { getBaseUrl } from "../utils/common";
 
-const town_bg = require('../../assets/bg_blur/town_bg.png');
+const sky_bg = require('../../assets/bg_blur/sky_bg.png');
 
 type RootStackParamList = {
   List: {};
@@ -146,7 +147,7 @@ function List({
         zIndex: -1,
       }}>
         <Image
-          source={town_bg}
+          source={sky_bg}
           style={{ height: '100%' }}
         />
       </View>

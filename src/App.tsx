@@ -10,7 +10,7 @@ import { ExamplesScreens } from "./screens/ExamplesScreen";
 import { HomeScreen } from "./screens/HomeScreen";
 import { InventoryScreen } from "./screens/InventoryScreen";
 import { ShopScreen } from "./screens/ShopScreen";
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import { Hunt, HuntResult, getAddressTokens, getHuntHistory, getAddressNfts } from "./helpers/api";
 import { usePublicKeys } from "./hooks/xnft-hooks";
 import { OnchainNFTDetails } from "./helpers/onchain";
@@ -20,7 +20,7 @@ const Tab = createBottomTabNavigator();
 function TabNavigator() {
   return (
     <Tab.Navigator
-      initialRouteName="Inventory"
+      initialRouteName="Home"
       screenOptions={{
         tabBarActiveTintColor: "black",
         headerShown: false,
@@ -100,6 +100,7 @@ export const AddressContext = createContext<{
     exp: number;
   },
   account: string;
+  getData?: () => void;
 }>({
   history: [],
   craftables: [], // address owned craftables
@@ -110,12 +111,6 @@ export const AddressContext = createContext<{
     exp: 0, // address owned exp tokens
   },
   account: "",
-});
-
-export const MetadataContext = createContext({
-  monsters: [],
-  craftables: [],
-  loots: [],
 });
 
 function App() {
@@ -131,72 +126,72 @@ function App() {
   const [ tokens, setTokens ] = useState({ gold: 0, exp: 0 });
   const [ isLoading, setIsLoading ] = useState(true);
   const accounts = usePublicKeys();
-  
-  useEffect(() => {
-    const getData = async() => {
-      if(!account) {
-        return;
-      }
 
-      let params = { account, isPublicKey: true };
+  const getData = useCallback(async() => {
+    if(!account) {
+      return;
+    }
 
-      try {
-        let [hunts, tokens, nfts] = await Promise.all([
-          getHuntHistory(params),
-          getAddressTokens(params),
-          getAddressNfts(params),
-        ]);
+    let params = { account, isPublicKey: true };
 
-        // 0.5s load time
-        setTimeout(() => {
-          setIsLoading(false);
-        }, 500);
-  
-        if(typeof hunts === "string") {
-          setHistory([]);
-          setTokens({gold: 0, exp: 0});
-          setMonsters([]);
-          setLoots([]);
-          setCraftables([]);
-          return;
-        }
-  
-        if(typeof tokens === "string") {
-          setHistory([]);
-          setTokens({gold: 0, exp: 0});
-          setMonsters([]);
-          setLoots([]);
-          setCraftables([]);
-          return;
-        }
-  
-        if(typeof nfts === "string") {
-          setHistory([]);
-          setTokens({gold: 0, exp: 0});
-          setMonsters([]);
-          setLoots([]);
-          setCraftables([]);
-          return;
-        }
-        
-        setHistory(hunts);
-        setTokens(tokens);
-        setMonsters(nfts.monster ?? []);
-        setLoots(nfts.loot ?? []);
-        setCraftables(nfts.craftable ?? []);
-      }
+    try {
+      let [hunts, tokens, nfts] = await Promise.all([
+        getHuntHistory(params),
+        getAddressTokens(params),
+        getAddressNfts(params),
+      ]);
 
-      catch (e){
+      // 0.5s load time
+      setTimeout(() => {
+        setIsLoading(false);
+      }, 500);
+
+      if(typeof hunts === "string") {
         setHistory([]);
         setTokens({gold: 0, exp: 0});
         setMonsters([]);
         setLoots([]);
         setCraftables([]);
-        setIsLoading(false);
         return;
       }
+
+      if(typeof tokens === "string") {
+        setHistory([]);
+        setTokens({gold: 0, exp: 0});
+        setMonsters([]);
+        setLoots([]);
+        setCraftables([]);
+        return;
+      }
+
+      if(typeof nfts === "string") {
+        setHistory([]);
+        setTokens({gold: 0, exp: 0});
+        setMonsters([]);
+        setLoots([]);
+        setCraftables([]);
+        return;
+      }
+      
+      setHistory(hunts);
+      setTokens(tokens);
+      setMonsters(nfts.monster ?? []);
+      setLoots(nfts.loot ?? []);
+      setCraftables(nfts.craftable ?? []);
     }
 
+    catch (e){
+      setHistory([]);
+      setTokens({gold: 0, exp: 0});
+      setMonsters([]);
+      setLoots([]);
+      setCraftables([]);
+      setIsLoading(false);
+      return;
+    }
+  }, [ account ]);
+  
+  useEffect(() => {
     getData();
   }, [ account ]);
 
@@ -240,7 +235,8 @@ function App() {
           loots, // address owned loots
           monsters, // address owned monsters
           tokens,
-          account
+          account,
+          getData
         }}>
           <TabNavigator />
         </AddressContext.Provider>
