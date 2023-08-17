@@ -11,7 +11,7 @@ import { LinearGradient } from "expo-linear-gradient";
 
 const forest_bg = require('../../assets/bg_blur/grasslands_bg.png');
 
-const LootText = ({item }: { item: Hunt }) => {
+const LootText = ({ item }: { item: Hunt }) => {
   let hasLoot = item.hunt_loots.length > 0;
 
   if(!hasLoot) {
@@ -35,7 +35,7 @@ const LootText = ({item }: { item: Hunt }) => {
           prepend = " and "
         }
 
-        return <>{prepend}<Text style={{fontWeight: 'bold'}}>1x {loot.loot![0].name}</Text></>;
+        return <Text key={`loot_text_${item.id}_${index}`}>{prepend}<Text style={{fontWeight: 'bold'}}>1x {loot.loot![0].name}</Text></Text>;
       })
     }
     {"."}
