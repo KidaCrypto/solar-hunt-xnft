@@ -111,6 +111,7 @@ function App() {
   const [ history, setHistory ] = useState<Hunt[]>([]);
   const [ account, setAccount ] = useState("");
   const [ tokens, setTokens ] = useState({ gold: 0, exp: 0 });
+  const [ isLoading, setIsLoading ] = useState(true);
   const accounts = usePublicKeys();
   
   useEffect(() => {
@@ -125,6 +126,11 @@ function App() {
         getHuntHistory(params),
         getAddressTokens(params),
       ]);
+
+      // 0.5s load time
+      setTimeout(() => {
+        setIsLoading(false);
+      }, 500);
 
       if(typeof hunts === "string") {
         setHistory([]);
@@ -159,9 +165,18 @@ function App() {
     setAccount(accounts.solana);
   }, [ accounts ]);
 
+  // need custom loader
   if (!fontsLoaded) {
     return (
-      <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+      <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: 'white' }}>
+        <ActivityIndicator />
+      </View>
+    );
+  }
+
+  if(isLoading) {
+    return (
+      <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: 'white' }}>
         <ActivityIndicator />
       </View>
     );
