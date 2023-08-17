@@ -96,6 +96,7 @@ export const getHuntHistory = async(params: BaseParams) => {
     }
 }
 
+// maybe get from wallet's rpc
 export const getAddressTokens = async(params: BaseParams) => {
     try {
         let res = await axios.post<ApiResult<{ gold: number; exp: number ;}>>('/onchain/tokens', params);
@@ -116,7 +117,8 @@ export const getAddressTokens = async(params: BaseParams) => {
     }
 }
 
-export const getNfts = async(params: BaseParams) => {
+// maybe get from wallet's rpc
+export const getAddressNfts = async(params: BaseParams) => {
     try {
         let res = await axios.post<ApiResult<ReadApiAsset[]>>('/onchain/nfts', params);
 

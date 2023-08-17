@@ -6,10 +6,42 @@ import { MetadataContext, AddressContext } from "../App";
 import { convertToHumanReadable, getBaseUrl } from "../utils/common";
 import { Button, View, TouchableOpacity, StyleSheet } from 'react-native';
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { newHunt } from "../helpers/api";
+import { Hunt, newHunt } from "../helpers/api";
 import { LinearGradient } from "expo-linear-gradient";
 
 const forest_bg = require('../../assets/bg_blur/grasslands_bg.png');
+
+const LootText = ({item }: { item: Hunt }) => {
+  let hasLoot = item.hunt_loots.length > 0;
+
+  if(!hasLoot) {
+    return null;
+  }
+
+  return (<Text>
+    {" Furthermore, the monster dropped "}
+    {
+      item.hunt_loots.map((loot, index) => {
+        let prepend = ",";
+        if(index === 0) {
+          prepend = "";
+        }
+  
+        else if(index > 2 && index === item.hunt_loots.length - 1) {
+          prepend = ", and "
+        }
+  
+        else if(index === item.hunt_loots.length - 1) {
+          prepend = " and "
+        }
+
+        return <>{prepend}<Text style={{fontWeight: 'bold'}}>1x {loot.loot![0].name}</Text></>;
+      })
+    }
+    {"."}
+  </Text>)
+    
+}
 
 export function HomeScreen() {
   const addressContext = useContext(AddressContext);
@@ -158,14 +190,25 @@ export function HomeScreen() {
             </View>
           </LinearGradient>
         </TouchableOpacity>
+        
+        {
+          addressContext.history.length === 0?
+          <View style={{ marginTop: 10, alignItems: 'center', justifyContent: 'center'}}>
+            <Text style={{fontWeight: 'bold', marginBottom: 10}}>↑↑↑</Text>
+            <Text style={{fontWeight: 'bold'}}>Click the Hunt Button to start a Hunt!</Text>
+          </View>
+           :
+          null
+        }
 
         <FlatList
           style={{ marginTop: 20, paddingTop: 30, paddingBottom: 100 }}
           data={addressContext.history}
           keyExtractor={(item) => `hunt_${item.id}`}
           showsVerticalScrollIndicator={false}
-          renderItem={({ item, index }) => (
-            <View style={{
+          renderItem={({ item, index }) => {
+            
+            return (<View style={{
               marginBottom: 35,
               width: '100%',
             }}>
@@ -174,15 +217,16 @@ export function HomeScreen() {
                 flexDirection: index % 2 === 1? 'row' : 'row-reverse',
                 alignItems: 'center',
                 marginTop: 5,
+                paddingVertical: 10,
               }}>
-                <Text style={{ fontSize: 11 }}>Encountered <Text style={{fontWeight: 'bold'}}>{item.is_shiny? '*' : ''}{item.monster.name}{item.is_shiny? '*' : ''}</Text> worth <Text style={{fontWeight: 'bold'}}>{item.gold}</Text> gold and <Text style={{fontWeight: 'bold'}}>{item.exp}</Text> exp {item.caught? ', after a gruesome fight, it was felled.' : 'but alas, it escaped our grasp.'}</Text>
+                <Text style={{ fontSize: 11 }}>Encountered <Text style={{fontWeight: 'bold'}}>{item.is_shiny? '*' : ''}{item.monster.name}{item.is_shiny? '*' : ''}</Text> worth <Text style={{fontWeight: 'bold'}}>{item.gold}</Text> gold and <Text style={{fontWeight: 'bold'}}>{item.exp}</Text> exp {item.caught? ', after a gruesome fight, it was felled.' : 'but alas, it escaped our grasp.'}<LootText item={item}/></Text>
                 <Image
                   source={{ uri: `${getBaseUrl()}/assets/sprites/base${item.is_shiny? '_shiny' : ''}/${item.monster.img_file}` }}
                   style={{ height: 50, width: 50, marginLeft: index % 2 === 1? 10 : 0, marginRight: index % 2 === 1? 0 : 10,  }}
                 />
               </View>
-            </View>
-          )}
+            </View>)
+          }}
         />
       </View>
     </Screen>

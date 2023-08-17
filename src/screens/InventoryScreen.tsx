@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -7,7 +7,6 @@ import {
   ActivityIndicator,
   Animated,
 } from "react-native";
-import tw from "twrnc";
 import {
   createStackNavigator,
   StackCardStyleInterpolator,
@@ -16,6 +15,7 @@ import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 
 import { Screen } from "../components/Screen";
 import { TokenRow } from "../components/TokenRow";
+import { AddressContext } from "../App";
 
 type RootStackParamList = {
   List: {};
@@ -24,50 +24,15 @@ type RootStackParamList = {
 
 const Stack = createStackNavigator<RootStackParamList>();
 
-function FullScreenLoadingIndicator() {
-  return (
-    <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-      <ActivityIndicator />
-    </View>
-  );
-}
-
-async function fetchTokenData(count = 20) {
-  const url = `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=${count}&page=1&sparkline=true&price_change_percentage=24h`;
-  return fetch(url).then((r) => r.json());
-}
-
-function useTokenData() {
-  const [loading, setLoading] = useState(true);
-  const [data, setData] = useState<any[]>([]);
-
-  useEffect(() => {
-    async function fetch() {
-      setLoading(true);
-      const data = await fetchTokenData();
-      console.log("data", data);
-      setData(data);
-      setLoading(false);
-    }
-
-    fetch();
-  }, []);
-
-  return { data, loading };
-}
-
 function List({
   navigation,
 }: NativeStackScreenProps<RootStackParamList, "List">) {
-  const { data, loading } = useTokenData();
+  const addressContext = useContext(AddressContext);
+  console.log(addressContext.loots);
 
   const handlePressTokenRow = (id: string) => {
     navigation.push("Detail", { id });
   };
-
-  if (loading) {
-    return <FullScreenLoadingIndicator />;
-  }
 
   const ItemSeparatorComponent = () => (
     <View
@@ -79,19 +44,11 @@ function List({
     <Screen>
       <FlatList
         style={{ flex: 1 }}
-        data={data}
-        keyExtractor={(item) => item.id}
+        data={[]}
+        keyExtractor={(item, index) => index.toString()}
         ItemSeparatorComponent={ItemSeparatorComponent}
         renderItem={({ item }) => {
-          return (
-            <TokenRow
-              id={item.id}
-              name={item.name}
-              price={item.current_price}
-              imageUrl={item.image}
-              onPress={handlePressTokenRow}
-            />
-          );
+          return null;
         }}
       />
     </Screen>
@@ -101,32 +58,7 @@ function List({
 function Detail({
   route,
 }: NativeStackScreenProps<RootStackParamList, "Detail">) {
-  const { data, loading } = useTokenData();
-  const { id } = route.params;
-
-  if (loading) {
-    return <FullScreenLoadingIndicator />;
-  }
-
-  const item = data.find((d) => d.id === id);
-
-  if (!item) {
-    return null;
-  }
-
-  return (
-    <Screen>
-      <View style={tw`bg-yellow-100 items-center justify-center p-4`}>
-        <Image source={{ uri: item.image }} style={tw`w-8 h-8 rounded m-4`} />
-        <Text style={tw`font-bold text-lg`}>{item.name}</Text>
-        <Text style={tw`font-bold text-lg`}>Symbol: {item.symbol}</Text>
-        <Text style={tw`font-bold text-lg`}>
-          Total supply: {item.total_supply}
-        </Text>
-        <Text style={tw`font-bold text-lg`}>All time high: {item.ath}</Text>
-      </View>
-    </Screen>
-  );
+  return null
 }
 
 const forSlide: StackCardStyleInterpolator = ({
@@ -172,12 +104,13 @@ const forSlide: StackCardStyleInterpolator = ({
   };
 };
 
-export const TokenListNavigator = () => {
+export const InventoryScreen = () => {
   return (
     <Stack.Navigator
       screenOptions={{
         animationEnabled: true,
         cardStyleInterpolator: forSlide,
+        headerShown: false,
       }}
     >
       <Stack.Screen
