@@ -22,13 +22,12 @@ import { SignMessageButton } from "../components/SignMessageButton";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { ApiResult, Craftable, getCraftables } from "../helpers/api";
 import { getBaseUrl, toLocaleDecimal } from "../utils/common";
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { MaterialCommunityIcons, FontAwesome5 } from '@expo/vector-icons';
 import { AddressContext } from "../App";
 import axios from '../services/axios';
 import { Connection, PublicKey, SystemProgram, Transaction, TransactionInstruction, TransactionMessage, VersionedTransaction, sendAndConfirmTransaction } from "@solana/web3.js";
-import { createTransferInstruction } from "@metaplex-foundation/mpl-bubblegum";
+// import { createTransferInstruction } from "@metaplex-foundation/mpl-bubblegum";
 import { Buffer } from 'buffer';
-import { useSolanaConnection } from "../hooks/xnft-hooks";
 
 const volcano_bg = require('../../assets/bg_blur/volcano_bg.png');
 const forge_bg = require('../../assets/bg_blur/forge_bg.jpg');
@@ -183,7 +182,6 @@ function Detail({
   
   const [ hasRequired, setHasRequired ] = useState(false);
   const [ isCrafting, setIsCrafting ] = useState(false);
-  const connection = useSolanaConnection();
   const { craftable } = route.params;
   const addressContext = useContext(AddressContext);
 
@@ -197,29 +195,6 @@ function Detail({
       return;
     });
   }, [addressContext, craftable]);
-
-
-  const configureAndSendCurrentTransaction = useCallback(async (
-    transaction: Transaction,
-    connection: Connection,
-    feePayer: PublicKey,
-    signTransaction: any // SignerWalletAdapterProps['signTransaction']
-  ) => {
-    const blockHash = await connection.getLatestBlockhash();
-    transaction.feePayer = feePayer;
-    transaction.recentBlockhash = blockHash.blockhash;
-    const signed = await signTransaction(transaction);
-    const signature = await connection.sendRawTransaction(signed.serialize());
-    await connection.confirmTransaction({
-      blockhash: blockHash.blockhash,
-      lastValidBlockHeight: blockHash.lastValidBlockHeight,
-      signature
-    });
-    return signature;
-  }, []);
-
-  const testCraft = useCallback(async() => {
-  }, []);
 
   // alerts needed
   const craft = useCallback(async() => {
@@ -251,7 +226,8 @@ function Detail({
       return;
     });
 
-    // try {
+    let uuid = "";
+    try {
       let preCraft = await axios.post<ApiResult<string | { uuid: string, adminPublicKey: any[], txParams: any }>>("/craft/pre", { nft_ids: allNftIds, craftable_id: craftable.id, isPublicKey: true, account: addressContext.account });
       if(!preCraft.data.success) {
         return;
@@ -266,7 +242,9 @@ function Detail({
       }
 
       // pre crafting verified
-      let {uuid, adminPublicKey, txParams} = preCraft.data.data;
+      // let {uuid, adminPublicKey, txParams} = preCraft.data.data;
+      let adminPublicKey = preCraft.data.data.adminPublicKey;
+      uuid = preCraft.data.data.uuid;
 
 
       // {
@@ -357,14 +335,21 @@ function Detail({
         if(newCraft.data.data.includes("Error")) {
           return;
         }
+
+        addressContext.getData!();
+        setIsCrafting(false);
       }, 5000);
 
       console.log('crafted');
-    // }
+    }
 
-    // catch(e) {
-    //   console.log(e);
-    // }
+    catch(e) {
+      console.log(e);
+      setIsCrafting(false);
+      if(uuid) {
+        await axios.post<ApiResult<string>>("/craft/error", {uuid});
+      }
+    }
   }, [addressContext, craftable]);
 
   return (
@@ -465,7 +450,11 @@ function Detail({
                 alignItems: 'center', 
                 justifyContent: 'center'
               }}>
-                <MaterialCommunityIcons name="hammer" size={30} color={hasRequired? "black" : 'gray'}/>
+                {
+                  !isCrafting?
+                  <MaterialCommunityIcons name="hammer" size={30} color={hasRequired? "black" : 'gray'}/> :
+                  <FontAwesome5 name="hourglass" size={30} color={'black'}/>
+                }
               </View>
             </TouchableHighlight>
           </View>
