@@ -13,7 +13,7 @@ import { Hunt, newHunt } from "../helpers/api";
 import { LinearGradient } from "expo-linear-gradient";
 import moment from 'moment';
 
-const forest_bg = require('../../assets/bg_blur/grasslands_bg.png');
+const grasslands_bg = require('../../assets/bg_blur/grasslands_bg.png');
 const COOLDOWN = 60; // 60s
 
 // allow animation
@@ -127,10 +127,10 @@ export function HomeScreen() {
         top: 0,
         left: 0,
         right: 0,
-        bottom: 0,
+        height: '100vh',
       }}>
         <Image
-          source={forest_bg}
+          source={grasslands_bg}
           style={{ height: '100%' }}
         />
       </View>
@@ -267,7 +267,7 @@ export function HomeScreen() {
               {
                 isOnCooldown && !isLoading?
                 <>
-                <Text style={{ letterSpacing: 5, marginLeft: 25, marginRight: 20, color: "#4d4235" }}>{cd}</Text>
+                <Text style={{ letterSpacing: 5, marginLeft: 25, marginRight: 20, color: "#4d4235", fontWeight: 'bold' }}>{cd}</Text>
                 </>:
                 <>
                 <MaterialCommunityIcons name="sword-cross" color='#4d4235' size={20} />

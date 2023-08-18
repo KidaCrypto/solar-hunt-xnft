@@ -20,7 +20,7 @@ const Tab = createBottomTabNavigator();
 function TabNavigator() {
   return (
     <Tab.Navigator
-      initialRouteName="Home"
+      initialRouteName="Crafting"
       screenOptions={{
         tabBarActiveTintColor: "black",
         headerShown: false,

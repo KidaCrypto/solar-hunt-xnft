@@ -36,7 +36,7 @@ function ComingSoon({
         top: 0,
         left: 0,
         right: 0,
-        bottom: 0,
+        height: '100vh',
       }}>
         <Image
           source={town_bg}

@@ -56,6 +56,30 @@ export type HuntLoot = {
 
 export type HuntResult = "Failed to catch" | "Caught";
 
+
+export type CraftableSkill = {
+    id: number;
+    craftable_id: number;
+    name: string;
+    value: number;
+  }
+  
+  export type CraftableRequirement = {
+    id: number;
+    craftable_id: number;
+    loot_id: number;
+    value: number;
+    loot?: MonsterLoot[];
+  }
+  
+  export type Craftable = {
+    id: number;
+    name: string;
+    img_file: string;
+    skills?: CraftableSkill[];
+    requirements?: CraftableRequirement[];
+  }
+
 export const newHunt = async(params: BaseParams) => {
     try {
         let res = await axios.post<ApiResult<HuntResult>>('/hunt', params);
@@ -132,6 +156,18 @@ export const getAddressNfts = async(params: BaseParams) => {
         }
 
         return res.data.data;
+    }
+
+    catch (e: any){
+        return "Error: " + e.response;
+    }
+}
+
+// maybe get from wallet's rpc
+export const getCraftables = async() => {
+    try {
+        let res = await axios.get<Craftable[]>('/craftable');
+        return res.data;
     }
 
     catch (e: any){

@@ -126,16 +126,6 @@ function List({
     return ret;
   }, [ addressContext.craftables ]);
 
-  const handlePressTokenRow = (id: string) => {
-    navigation.push("Detail", { id });
-  };
-
-  const ItemSeparatorComponent = () => (
-    <View
-      style={{ marginVertical: 8, borderColor: "#eee", borderBottomWidth: 1 }}
-    />
-  );
-
   return (
     <Screen>
       <View style={{
@@ -143,7 +133,7 @@ function List({
         top: 0,
         left: 0,
         right: 0,
-        bottom: 0,
+        height: '100vh',
         zIndex: -1,
       }}>
         <Image
@@ -156,6 +146,8 @@ function List({
         style={{ maxHeight: '100vh', paddingBottom: 100 }}
         showsVerticalScrollIndicator={false}
       >
+        <Text style={[styles.title, { fontSize: 30, color: 'white' }]}>INVENTORY</Text>
+
         {/* monsters */}
         <Text style={styles.title}>MONSTERS</Text>
         <FlatList
