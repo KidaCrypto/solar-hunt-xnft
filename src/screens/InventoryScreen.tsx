@@ -183,7 +183,6 @@ function List({
           renderItem={({ item }) => {
             return <SkillIcon item={craftables[item]}/>;
           }}
-          contentContainerStyle={{ alignItems: 'center', justifyContent: 'center', width: '100%' }}
         />
       </ScrollView>
     </Screen>

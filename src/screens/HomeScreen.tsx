@@ -98,12 +98,13 @@ export function HomeScreen() {
   useEffect(() => {
     // setAnimation();
     if(addressContext.history.length === 0){
+      setIsLoading(false);
+      setIsOnCooldown(false);
       return;
     }
 
     // only load this the first time
     if(!isLoading) {
-      console.log('already loaded');
       return;
     }
 
@@ -234,7 +235,7 @@ export function HomeScreen() {
         <TouchableOpacity 
           onPress={async() => {
             setIsOnCooldown(true);
-            startCountDown(60);
+            startCountDown(COOLDOWN);
             await newHunt({ account: addressContext.account, isPublicKey: true });
             await runIfFunction(addressContext.getData);
             // setAnimation();
@@ -255,7 +256,7 @@ export function HomeScreen() {
             }}
           >
             <View style={{ 
-              padding: 10,
+              height: 40,
               flexDirection: 'row',
               alignItems: 'center',
               justifyContent: 'center',

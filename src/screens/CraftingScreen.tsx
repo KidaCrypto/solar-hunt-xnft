@@ -1,5 +1,5 @@
 
-import { useContext, useEffect, useMemo, useState } from "react";
+import { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import {
   View,
   Text,
@@ -20,10 +20,15 @@ import {
 import { Screen } from "../components/Screen";
 import { SignMessageButton } from "../components/SignMessageButton";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { Craftable, getCraftables } from "../helpers/api";
+import { ApiResult, Craftable, getCraftables } from "../helpers/api";
 import { getBaseUrl, toLocaleDecimal } from "../utils/common";
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { AddressContext } from "../App";
+import axios from '../services/axios';
+import { Connection, PublicKey, SystemProgram, Transaction, TransactionInstruction, TransactionMessage, VersionedTransaction, sendAndConfirmTransaction } from "@solana/web3.js";
+import { createTransferInstruction } from "@metaplex-foundation/mpl-bubblegum";
+import { Buffer } from 'buffer';
+import { useSolanaConnection } from "../hooks/xnft-hooks";
 
 const volcano_bg = require('../../assets/bg_blur/volcano_bg.png');
 const forge_bg = require('../../assets/bg_blur/forge_bg.jpg');
@@ -177,18 +182,189 @@ function Detail({
 }: NativeStackScreenProps<RootStackParamList, "Detail">) {
   
   const [ hasRequired, setHasRequired ] = useState(false);
+  const [ isCrafting, setIsCrafting ] = useState(false);
+  const connection = useSolanaConnection();
   const { craftable } = route.params;
   const addressContext = useContext(AddressContext);
 
   useEffect(() => {
     craftable.requirements!.forEach(x => {
       let addressOwned = addressContext.loots.filter(a => a.metadata.name === x.loot![0].name).length;
-      if(addressOwned >= x.value) {
+      if(addressOwned < x.value) {
         return;
       }
-      setHasRequired(false);
+      setHasRequired(true);
       return;
-    })
+    });
+  }, [addressContext, craftable]);
+
+
+  const configureAndSendCurrentTransaction = useCallback(async (
+    transaction: Transaction,
+    connection: Connection,
+    feePayer: PublicKey,
+    signTransaction: any // SignerWalletAdapterProps['signTransaction']
+  ) => {
+    const blockHash = await connection.getLatestBlockhash();
+    transaction.feePayer = feePayer;
+    transaction.recentBlockhash = blockHash.blockhash;
+    const signed = await signTransaction(transaction);
+    const signature = await connection.sendRawTransaction(signed.serialize());
+    await connection.confirmTransaction({
+      blockhash: blockHash.blockhash,
+      lastValidBlockHeight: blockHash.lastValidBlockHeight,
+      signature
+    });
+    return signature;
+  }, []);
+
+  const testCraft = useCallback(async() => {
+  }, []);
+
+  // alerts needed
+  const craft = useCallback(async() => {
+    setIsCrafting(true);
+
+    let nftIds: {[name: string]: string[]} = {};
+    let allNftIds: string[] = [];
+
+    craftable.requirements!.forEach(x => {
+      if(!nftIds[x.loot![0].name]) {
+        nftIds[x.loot![0].name] = [];
+      }
+
+      addressContext.loots.forEach(a => {
+        if(a.metadata.name !== x.loot![0].name) {
+          return;
+        }
+
+        // only use required amounts
+        // if equal then already has enough loot
+        if(nftIds[x.loot![0].name].length === x.value) {
+          return;
+        }
+
+        nftIds[x.loot![0].name].push(a.raw.id);
+        allNftIds.push(a.raw.id);
+      });
+      
+      return;
+    });
+
+    // try {
+      let preCraft = await axios.post<ApiResult<string | { uuid: string, adminPublicKey: any[], txParams: any }>>("/craft/pre", { nft_ids: allNftIds, craftable_id: craftable.id, isPublicKey: true, account: addressContext.account });
+      if(!preCraft.data.success) {
+        return;
+      }
+      
+      if(!preCraft.data.data) {
+        return;
+      }
+      
+      if(typeof preCraft.data.data === "string") {
+        return;
+      }
+
+      // pre crafting verified
+      let {uuid, adminPublicKey, txParams} = preCraft.data.data;
+
+
+      // {
+      //     merkleTree: treeAddress.toBase58(),
+      //     treeAuthority: treeAuthority.toBase58(),
+      //     leafOwner: leafOwner.toBase58(),
+      //     leafDelegate: leafDelegate.toBase58(),
+      //     newLeafOwner: newLeafOwner.toBase58(),
+      //     logWrapper: SPL_NOOP_PROGRAM_ID.toBase58(),
+      //     compressionProgram: SPL_ACCOUNT_COMPRESSION_PROGRAM_ID.toBase58(),
+      //     anchorRemainingAccounts: proofPath.map(x => ({ pubkey: x.pubkey.toBase58(), isSigner: x.isSigner, isWritable: x.isWritable })),
+      // }, {
+      //     root: [...new PublicKey(assetProof.root.trim()).toBytes()],
+      //     dataHash: [...new PublicKey(asset.compression.data_hash.trim()).toBytes()],
+      //     creatorHash: [...new PublicKey(asset.compression.creator_hash.trim()).toBytes()],
+      //     nonce: asset.compression.leaf_id,
+      //     index: asset.compression.leaf_id,
+      // },
+      // BUBBLEGUM_PROGRAM_ID.toBase58()
+      // let txs: TransactionInstruction[] = [];
+      // txParams.forEach((param: any) => {
+      //   console.log(param)
+
+      //   // reconstruct everything from raw data
+      //   let param0 = {
+      //     merkleTree: new PublicKey(param[0].merkleTree),
+      //     treeAuthority: new PublicKey(param[0].treeAuthority),
+      //     leafOwner: new PublicKey(param[0].leafOwner),
+      //     leafDelegate: new PublicKey(param[0].leafDelegate),
+      //     newLeafOwner: new PublicKey(param[0].newLeafOwner),
+      //     logWrapper: new PublicKey(param[0].logWrapper),
+      //     compressionProgram: new PublicKey(param[0].compressionProgram),
+      //     anchorRemainingAccounts: param[0].anchorRemainingAccounts.map((x: any) => ({ pubkey: new PublicKey(x.pubkey), isSigner: x.isSigner, isWritable: x.isWritable })),
+      //   }
+      //   let param2 = new PublicKey(param[2])
+      //   txs.push(createTransferInstruction(param0, param[1], param2));
+
+      // });
+
+      // get tx from shyft.to
+      let res = await axios.post(
+          "https://api.shyft.to/sol/v1/nft/compressed/transfer_many", 
+          {
+            "network": "mainnet-beta",
+            "nft_addresses": allNftIds,
+            "from_address": addressContext.account,
+            "to_address": adminPublicKey
+          }, 
+          { 
+            headers: {
+              "Content-Type": "application/json",
+              "x-api-key": "ZsCmQGJe2iK77mzH"
+            },
+          }
+        );
+
+        let txs: Transaction[] = [];
+        res.data.result.encoded_transactions.forEach((t: string) => {
+          let recoveredTransaction = Transaction.from(Buffer.from(t, 'base64'));
+          txs.push(recoveredTransaction);
+        })
+
+      await window.xnft.solana.sendAndConfirm(txs[0]);
+      // send the transaction
+
+      // let transaction = new Transaction().add(...txs);
+      // let recentBlockhash = await connection!.getLatestBlockhash();
+      // console.log(recentBlockhash);
+      // transaction.recentBlockhash = recentBlockhash.blockhash;
+      // transaction.feePayer = new PublicKey(addressContext.account);
+      // const signed = await window.xnft.signTransaction(transaction);
+      // const txResult = await window.xnft.solana.send(signed);
+
+      // const txSignature = await window.xnft.solana.sendAndConfirm(new Transaction().add(iX));
+      // console.log(txSignature);
+
+      // notify server after delay cause sometimes server wont update so fast
+      setTimeout(async () => {
+        let newCraft = await axios.post<ApiResult<string>>("/craft/", {uuid});
+        if(!newCraft.data.success) {
+          return;
+        }
+        
+        if(!newCraft.data.data) {
+          return;
+        }
+        
+        if(newCraft.data.data.includes("Error")) {
+          return;
+        }
+      }, 5000);
+
+      console.log('crafted');
+    // }
+
+    // catch(e) {
+    //   console.log(e);
+    // }
   }, [addressContext, craftable]);
 
   return (
@@ -213,9 +389,10 @@ function Detail({
       }}>
         <TouchableHighlight
           onPress={() => navigation.pop()}
+          disabled={isCrafting}
         >
           <View style={{ height: 50, width: 50 }}>
-            <MaterialCommunityIcons name="chevron-left" color="white" size={50}/>
+            <MaterialCommunityIcons name="chevron-left" color={!isCrafting? "white" : "gray"} size={50}/>
           </View>
         </TouchableHighlight>
       </View>
@@ -275,6 +452,10 @@ function Detail({
             </View>
             <TouchableHighlight
               disabled={!hasRequired}
+              onPress={craft}
+              style={{
+                borderRadius: 25,
+              }}
             >
               <View style={{ 
                 height: 50, 

@@ -213,7 +213,7 @@ function App() {
   if (!fontsLoaded) {
     return (
       <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: 'white' }}>
-        <ActivityIndicator />
+        <ActivityIndicator size={"large"}/>
       </View>
     );
   }
@@ -221,7 +221,7 @@ function App() {
   if(isLoading) {
     return (
       <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: 'white' }}>
-        <ActivityIndicator />
+        <ActivityIndicator size={"large"}/>
       </View>
     );
   }
