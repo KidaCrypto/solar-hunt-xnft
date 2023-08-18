@@ -1,13 +1,14 @@
 {
   "name": "Solar Hunt",
   "version": "0.0.1",
-  "storage": "",
+  "storage": "arweave",
   "description": "Hunt monsters. Craft Items. Repeat.",
   "website": "https://solar-hunt-xnft.kidas.app",
   "kind": "app",
   "icon": {
     "md": "./assets/icon.png"
   },
+  "tag": "game",
   "contact": "https://twitter.com/darksoulsfanlol",
   "screenshots": [
     "./assets/screenshot.png"
