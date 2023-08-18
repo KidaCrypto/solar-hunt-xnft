@@ -4,7 +4,7 @@
 import { Text, FlatList, Image, LayoutAnimation } from "react-native";
 
 import { Screen } from "../components/Screen";
-import { useCallback, useContext, useEffect, useState } from "react";
+import { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { AddressContext } from "../App";
 import { convertToHumanReadable, getBaseUrl, runIfFunction, toLocaleDecimal } from "../utils/common";
 import { UIManager, View, TouchableOpacity, StyleSheet } from 'react-native';
@@ -14,7 +14,23 @@ import { LinearGradient } from "expo-linear-gradient";
 import moment from 'moment';
 
 const grasslands_bg = require('../../assets/bg_blur/grasslands_bg.png');
+const badge_bronze = require('../../assets/rank/bronze.png');
+const badge_silver = require('../../assets/rank/silver.png');
+const badge_gold = require('../../assets/rank/gold.png');
+const badge_platinum = require('../../assets/rank/platinum.png');
+const badge_diamond = require('../../assets/rank/diamond.png');
+const badge_master = require('../../assets/rank/master.png');
 const COOLDOWN = 60; // 60s
+
+// hard code some ranks
+const ranks = {
+  bronze: 0,
+  silver: 200,
+  gold: 1000,
+  platinum: 5000,
+  diamond: 10000,
+  master: 50000,
+}
 
 // allow animation
 // UIManager.setLayoutAnimationEnabledExperimental && UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -121,6 +137,26 @@ export function HomeScreen() {
     setIsOnCooldown(false);
   }, [isLoading, addressContext.history]);
 
+  const badge = useMemo(() => {
+    const { tokens: { exp } } = addressContext;
+    if(exp >= ranks.master) {
+      return badge_master;
+    }
+    if(exp >= ranks.diamond) {
+      return badge_diamond;
+    }
+    if(exp >= ranks.platinum) {
+      return badge_platinum;
+    }
+    if(exp >= ranks.gold) {
+      return badge_gold;
+    }
+    if(exp >= ranks.silver) {
+      return badge_silver;
+    }
+    return badge_bronze;
+  }, [addressContext]);
+
   return (
     <Screen>
       <View style={{
@@ -140,12 +176,21 @@ export function HomeScreen() {
           height: 70,
           width: 70,
           borderRadius: 50,
-          backgroundColor: 'orange',
-          borderColor: 'black',
+          backgroundColor: 'white',
+          borderColor: '#8a4d0f',
           borderWidth: 1,
           zIndex: 2,
+          alignItems: 'center',
+          justifyContent: 'center',
         }}>
           {/** Badge here */}
+          <Image
+            source={badge}
+            style={{
+              width: 30,
+              height: 33
+            }}
+          />
         </View>
             <View style={[styles.playerTokens, { left: 35, top: 18 }]}>
               {/** diagonal shape */}
