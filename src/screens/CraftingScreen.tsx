@@ -249,6 +249,14 @@ function Detail({
         return;
       }
 
+      // not own key
+      // already handled in the backend
+      if(!addressContext.isPublicKey) {
+        addressContext.getData!();
+        setIsCrafting(false);
+        return;
+      }
+
       // pre crafting verified
       // let {uuid, adminPublicKey, txParams} = preCraft.data.data;
       let adminPublicKey = preCraft.data.data.adminPublicKey;
