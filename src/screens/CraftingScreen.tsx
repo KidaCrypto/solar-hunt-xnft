@@ -378,7 +378,12 @@ function Detail({
           </View>
         </TouchableOpacity>
       </View>
-      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+      <View style={{ 
+          flex: 1, 
+          alignItems: 'center', 
+          justifyContent: window.innerWidth <= 375? 'flex-start' : 'center', 
+        }}
+      >
           <Image 
             source={{ uri: getBaseUrl() + "/assets/skills/" + craftable.img_file }}
             style={{
@@ -445,7 +450,7 @@ function Detail({
                 borderRadius: 25, 
                 backgroundColor: 'white', 
                 alignItems: 'center', 
-                justifyContent: 'center'
+                justifyContent: 'center',
               }}>
                 {
                   !isCrafting?
