@@ -10,7 +10,7 @@ import {
   ScrollView,
   StyleSheet,
   Button,
-  TouchableHighlight,
+  TouchableOpacity,
 } from "react-native";
 import {
   createStackNavigator,
@@ -28,9 +28,6 @@ import axios from '../services/axios';
 import { Connection, PublicKey, SystemProgram, Transaction, TransactionInstruction, TransactionMessage, VersionedTransaction, sendAndConfirmTransaction } from "@solana/web3.js";
 // import { createTransferInstruction } from "@metaplex-foundation/mpl-bubblegum";
 import { Buffer } from 'buffer';
-
-const volcano_bg = require('../../assets/bg_blur/volcano_bg.png');
-const forge_bg = require('../../assets/bg_blur/forge_bg.jpg');
 
 export type PreCraftParams = {
   craftable_id: number;
@@ -65,7 +62,7 @@ const CraftableItem = ({ item, onPress }: {item: Craftable, onPress: (craftable:
   let skillText = Object.entries(skills).map(([key, value]) => (`${key.charAt(0).toUpperCase()}${key.substring(1, key.length)} +${toLocaleDecimal(value, 2, 2)}%\n`));
 
   return (
-    <TouchableHighlight 
+    <TouchableOpacity 
       onPress={() => onPress(item)} 
       style={{
         marginBottom: 20
@@ -103,7 +100,7 @@ const CraftableItem = ({ item, onPress }: {item: Craftable, onPress: (craftable:
           <Text style={{ fontSize: 10, marginTop: 5 }}>{skillText}</Text>
         </View>
       </View>
-    </TouchableHighlight>
+    </TouchableOpacity>
   )
 }
 
@@ -143,7 +140,7 @@ function List({
         height: 'calc(100vh + 20px)',
       }}>
         <Image
-          source={volcano_bg}
+          source={{ uri: getBaseUrl() + '/assets/bg_blur/volcano_bg.png' }}
           style={{ height: '100%' }}
         />
       </View>
@@ -187,7 +184,7 @@ function Detail({
 
   useEffect(() => {
     craftable.requirements!.forEach(x => {
-      let addressOwned = addressContext.loots.filter(a => a.metadata.name === x.loot![0].name).length;
+      let addressOwned = addressContext.loots.filter(a => a.metadata.name === x.name).length;
       if(addressOwned < x.value) {
         return;
       }
@@ -204,22 +201,22 @@ function Detail({
     let allNftIds: string[] = [];
 
     craftable.requirements!.forEach(x => {
-      if(!nftIds[x.loot![0].name]) {
-        nftIds[x.loot![0].name] = [];
+      if(!nftIds[x.name]) {
+        nftIds[x.name] = [];
       }
 
       addressContext.loots.forEach(a => {
-        if(a.metadata.name !== x.loot![0].name) {
+        if(a.metadata.name !== x.name) {
           return;
         }
 
         // only use required amounts
         // if equal then already has enough loot
-        if(nftIds[x.loot![0].name].length === x.value) {
+        if(nftIds[x.name].length === x.value) {
           return;
         }
 
-        nftIds[x.loot![0].name].push(a.raw.id);
+        nftIds[x.name].push(a.raw.id);
         allNftIds.push(a.raw.id);
       });
       
@@ -362,7 +359,7 @@ function Detail({
         height: '100vh',
       }}>
         <Image
-          source={forge_bg}
+          source={{ uri: getBaseUrl() + '/assets/bg_blur/forge_bg.jpg' }}
           style={{ height: '100%' }}
         />
       </View>
@@ -372,16 +369,16 @@ function Detail({
         left: 10,
         zIndex: 1,
       }}>
-        <TouchableHighlight
+        <TouchableOpacity
           onPress={() => navigation.pop()}
           disabled={isCrafting}
         >
           <View style={{ height: 50, width: 50 }}>
             <MaterialCommunityIcons name="chevron-left" color={!isCrafting? "white" : "gray"} size={50}/>
           </View>
-        </TouchableHighlight>
+        </TouchableOpacity>
       </View>
-      <View style={{ flex: 1, alignItems: 'center' }}>
+      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
           <Image 
             source={{ uri: getBaseUrl() + "/assets/skills/" + craftable.img_file }}
             style={{
@@ -416,26 +413,26 @@ function Detail({
             }}>
                 {
                   craftable.requirements!.map(x => {
-                    let addressOwned = addressContext.loots.filter(a => a.metadata.name === x.loot![0].name).length;
+                    let addressOwned = addressContext.loots.filter(a => a.metadata.name === x.name).length;
 
                     return (
-                    <View key={`requirement_${x.loot_id}`} style={{ flexDirection: 'row', marginTop: 10 }}>
+                    <View key={`requirement_${x.name}`} style={{ flexDirection: 'row', marginTop: 10 }}>
                       <Image
-                        source={{uri: getBaseUrl() + "/assets/skills/" + x.loot![0].img_file}}
+                        source={{uri: getBaseUrl() + "/assets/skills/" + x.img_file}}
                         style={{
                           height: 50,
                           width: 50,
                         }}
                       />
                       <View style={{ marginLeft: 5, paddingLeft: 15, width: 150, alignItems: 'flex-start', justifyContent: 'center' }}>
-                        <Text style={{ marginLeft: 5 }}>{x.loot![0].name}: <Text style={{ color: addressOwned < x.value? '#e22f2f' : '#64e73c'}}>{addressOwned} </Text>/ {x.value}</Text>
+                        <Text style={{ marginLeft: 5 }}>{x.name}: <Text style={{ color: addressOwned < x.value? '#e22f2f' : '#64e73c'}}>{addressOwned} </Text>/ {x.value}</Text>
                       </View>
                     </View>
                     )
                   })
                 }
             </View>
-            <TouchableHighlight
+            <TouchableOpacity
               disabled={!hasRequired}
               onPress={craft}
               style={{
@@ -456,7 +453,7 @@ function Detail({
                   <FontAwesome5 name="hourglass" size={30} color={'black'}/>
                 }
               </View>
-            </TouchableHighlight>
+            </TouchableOpacity>
           </View>
       </View>
     </Screen>

@@ -113,6 +113,14 @@ export const AddressContext = createContext<{
   account: "",
 });
 
+const Banner = ({ left, right }: { left?: number, right?: number }) => {
+  return (
+    <View style={{ position: 'absolute', top: 0, bottom: 0, width: 300, left }}>
+      {/* <Image /> */}
+    </View>
+  )
+}
+
 function App() {
   let [fontsLoaded] = useFonts({
     Inter_900Black,
@@ -238,7 +246,11 @@ function App() {
           account,
           getData
         }}>
-          <TabNavigator />
+          <View style={{ alignItems: 'center', width: '100vw', height: '100vh', backgroundColor: 'white', overflow: 'hidden' }}>
+            <View style={{ maxWidth: 500, width: '100%', height: '100%', borderLeftWidth: 1, borderRightWidth: 1 }}>
+              <TabNavigator />
+            </View>
+          </View>
         </AddressContext.Provider>
       </NavigationContainer>
     </RecoilRoot>

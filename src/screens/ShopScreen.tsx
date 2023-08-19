@@ -14,10 +14,7 @@ import {
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 
 import { Screen } from "../components/Screen";
-import { TokenRow } from "../components/TokenRow";
-import { AddressContext } from "../App";
-
-const town_bg = require('../../assets/bg_blur/town_bg.png');
+import { getBaseUrl } from "../utils/common";
 
 type RootStackParamList = {
   ComingSoon: {};
@@ -39,7 +36,7 @@ function ComingSoon({
         height: '100vh',
       }}>
         <Image
-          source={town_bg}
+          source={{ uri: getBaseUrl() + '/assets/bg_blur/town_bg.png' }}
           style={{ height: '100%' }}
         />
       </View>

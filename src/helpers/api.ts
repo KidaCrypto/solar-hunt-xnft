@@ -71,13 +71,20 @@ export type CraftableSkill = {
     value: number;
     loot?: MonsterLoot[];
   }
+
+export type CraftableRequirementByName = {
+    craftable_id: number;
+    name: string;
+    img_file: string;
+    value: number;
+}
   
   export type Craftable = {
     id: number;
     name: string;
     img_file: string;
     skills?: CraftableSkill[];
-    requirements?: CraftableRequirement[];
+    requirements?: CraftableRequirementByName[];
   }
 
 export const newHunt = async(params: BaseParams) => {

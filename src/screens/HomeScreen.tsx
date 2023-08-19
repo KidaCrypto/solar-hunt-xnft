@@ -13,7 +13,6 @@ import { Hunt, newHunt } from "../helpers/api";
 import { LinearGradient } from "expo-linear-gradient";
 import moment from 'moment';
 
-const grasslands_bg = require('../../assets/bg_blur/grasslands_bg.png');
 const badge_bronze = require('../../assets/rank/bronze.png');
 const badge_silver = require('../../assets/rank/silver.png');
 const badge_gold = require('../../assets/rank/gold.png');
@@ -70,6 +69,7 @@ const LootText = ({ item }: { item: Hunt }) => {
 export function HomeScreen() {
   const [ isLoading, setIsLoading ] = useState(true);
   const [ isOnCooldown, setIsOnCooldown ] = useState(true);
+  const [ isWaitingForResult, setIsWaitingForResult ] = useState(false);
   const [ cd, setCd ] = useState(0);
   const addressContext = useContext(AddressContext);
   /* const setAnimation = () => {
@@ -167,7 +167,7 @@ export function HomeScreen() {
         height: '100vh',
       }}>
         <Image
-          source={grasslands_bg}
+          source={{ uri: getBaseUrl() + '/assets/bg_blur/grasslands_bg.png' }}
           style={{ height: '100%' }}
         />
       </View>
@@ -281,8 +281,12 @@ export function HomeScreen() {
           onPress={async() => {
             setIsOnCooldown(true);
             startCountDown(COOLDOWN);
+            setIsWaitingForResult(true);
             await newHunt({ account: addressContext.account, isPublicKey: true });
-            await runIfFunction(addressContext.getData);
+            setTimeout(async() => {
+              await runIfFunction(addressContext.getData);
+              setIsWaitingForResult(false);
+            }, 2000);
             // setAnimation();
           }}
           accessibilityRole="button"
@@ -335,8 +339,25 @@ export function HomeScreen() {
           null
         }
 
+        {
+          isWaitingForResult?
+          <View style={{
+            marginTop: 20,
+            marginBottom: 5,
+            width: '100%',
+            alignItems: 'center',
+            justifyContent: 'center',
+            height: 120,
+            borderWidth: 1,
+            borderRadius: 5,
+          }}>
+            <Text style={{ fontWeight: 'bold', fontSize: 15 }}>Hunting..</Text>
+          </View> :
+          null
+        }
+
         <FlatList
-          style={{ marginTop: 20, paddingTop: 30, paddingBottom: 100 }}
+          style={{ marginTop: isWaitingForResult? 0 : 20, paddingTop: 30, paddingBottom: 100 }}
           data={addressContext.history}
           keyExtractor={(item) => `hunt_${item.id}`}
           showsVerticalScrollIndicator={false}
@@ -354,10 +375,16 @@ export function HomeScreen() {
                 marginTop: 5,
                 paddingVertical: 10,
               }}>
-                <Text style={{ fontSize: 11 }}>Encountered <Text style={{fontWeight: 'bold'}}>{item.is_shiny? '*' : ''}{item.monster.name}{item.is_shiny? '*' : ''}</Text> worth <Text style={{fontWeight: 'bold'}}>{item.gold}</Text> gold and <Text style={{fontWeight: 'bold'}}>{item.exp}</Text> exp {item.caught? ', after a gruesome fight, it was felled.' : 'but alas, it escaped our grasp.'}<LootText item={item}/></Text>
+                <Text style={{ fontSize: 11 }}>{item.caught? 'Successfully captured' : 'Encountered'} a <Text style={{fontWeight: 'bold'}}>{item.is_shiny? '*shiny* ' : ''}{item.monster.name}</Text> worth <Text style={{fontWeight: 'bold'}}>{item.gold}</Text> gold and <Text style={{fontWeight: 'bold'}}>{item.exp}</Text> exp{item.caught? '.' : ' but we failed to capture it.'}<LootText item={item}/></Text>
                 <Image
                   source={{ uri: `${getBaseUrl()}/assets/sprites/base${item.is_shiny? '_shiny' : ''}/${item.monster.img_file}` }}
-                  style={{ height: 50, width: 50, marginLeft: index % 2 === 1? 10 : 0, marginRight: index % 2 === 1? 0 : 10,  }}
+                  style={{ 
+                    height: 80, 
+                    width: 80, 
+                    marginLeft: index % 2 === 1? 10 : 0, 
+                    marginRight: index % 2 === 1? 0 : 10,  
+                    resizeMode: 'contain'
+                  }}
                 />
               </View>
             </View>)

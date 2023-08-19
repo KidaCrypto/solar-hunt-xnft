@@ -22,8 +22,6 @@ import { Screen } from "../components/Screen";
 import { AddressContext } from "../App";
 import { getBaseUrl } from "../utils/common";
 
-const sky_bg = require('../../assets/bg_blur/sky_bg.png');
-
 type RootStackParamList = {
   List: {};
   Detail: { id: string };
@@ -42,10 +40,16 @@ const TokenIcon = ({ item }: {item: TokenDetail}) => {
       <View style={styles.tokenCountContainer}>
         <Text style={styles.tokenCount}>{ item.count }</Text>
       </View>
-      <Image
-        source={{ uri: item.uri }}
-        style={{ height: 50, width: 50 }}
-      />
+      <View style={{flex: 1}}>
+        <Image
+          source={{ uri: item.uri }}
+          style={{
+            width: window.innerWidth <= 375? 50 : 80,
+            height: window.innerWidth <= 375? 50 : 80,
+            resizeMode: 'contain',
+          }}
+        />
+      </View>
     </View>
   )
 }
@@ -56,10 +60,18 @@ const SkillIcon = ({ item }: {item: TokenDetail}) => {
       <View style={styles.skillCountContainer}>
         <Text style={styles.skillCount}>{ item.count }</Text>
       </View>
-      <Image
-        source={{ uri: item.uri }}
-        style={{ height: 60, width: 60 }}
-      />
+      
+      <View style={{flex: 1}}>
+        <Image
+          source={{ uri: item.uri }}
+          style={{
+            width: '100%',
+            height: '100%',
+            aspectRatio: 1,
+            resizeMode: 'stretch'
+          }}
+        />
+      </View>
     </View>
   )
 }
@@ -137,7 +149,7 @@ function List({
         zIndex: -1,
       }}>
         <Image
-          source={sky_bg}
+          source={{ uri: getBaseUrl() + '/assets/bg_blur/sky_bg.png' }}
           style={{ height: '100%' }}
         />
       </View>
@@ -264,7 +276,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderRadius: 5,
     borderWidth: 1,
-    backgroundColor: 'rgba(0,0,0,0.3)',
+    backgroundColor: 'rgba(0,0,0,0.1)',
     overflow: 'hidden',
   },
   tokenCountContainer: {
