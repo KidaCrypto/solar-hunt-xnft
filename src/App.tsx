@@ -4,7 +4,6 @@ import { ActivityIndicator, StyleSheet, View, Text, TextInput, Button, Image } f
 import { NavigationContainer } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { MaterialCommunityIcons, Entypo } from "@expo/vector-icons";
-import { useFonts, Inter_900Black } from "@expo-google-fonts/dev";
 
 import { CraftingScreen } from "./screens/CraftingScreen";
 import { HomeScreen } from "./screens/HomeScreen";
@@ -101,6 +100,8 @@ export const AddressContext = createContext<{
     exp: number;
   },
   account: string;
+  inputAccount: string;
+  isPublicKey: boolean;
   getData?: () => void;
 }>({
   history: [],
@@ -112,6 +113,8 @@ export const AddressContext = createContext<{
     exp: 0, // address owned exp tokens
   },
   account: "",
+  inputAccount: "",
+  isPublicKey: true,
 });
 
 const Banner = ({ left, right }: { left?: number, right?: number }) => {
@@ -130,6 +133,7 @@ function App() {
   const [ craftables, setCraftables ] = useState<OnchainNFTDetails[]>([]);
   const [ tokens, setTokens ] = useState({ gold: 0, exp: 0 });
   const [ isLoading, setIsLoading ] = useState(true);
+  const [ isPublicKey, setIsPublicKey ] = useState(true);
   const [ inputAccount, setInputAccount ] = useState("");
   const accounts = usePublicKeys();
 
@@ -143,6 +147,7 @@ function App() {
         return;
       }
       setAccount(account);
+      setIsPublicKey(false);
     }
 
     catch {
@@ -156,7 +161,8 @@ function App() {
       return;
     }
 
-    let params = { account, isPublicKey: true };
+    // use back the keyed in account for simplicity since every backend logic is handled by this
+    let params = { account: isPublicKey? account : inputAccount, isPublicKey };
 
     try {
       let [hunts, tokens, nfts] = await Promise.all([
@@ -210,7 +216,7 @@ function App() {
       setIsLoading(false);
       return;
     }
-  }, [ account ]);
+  }, [ account, isPublicKey ]);
   
   useEffect(() => {
     setIsLoading(true);
@@ -285,6 +291,8 @@ function App() {
           monsters, // address owned monsters
           tokens,
           account,
+          isPublicKey,
+          inputAccount,
           getData,
         }}>
           <View style={{ alignItems: 'center', width: '100vw', height: '100vh', backgroundColor: 'white', overflow: 'hidden' }}>

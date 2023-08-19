@@ -225,7 +225,18 @@ function Detail({
 
     let uuid = "";
     try {
-      let preCraft = await axios.post<ApiResult<string | { uuid: string, adminPublicKey: any[], txParams: any }>>("/craft/pre", { nft_ids: allNftIds, craftable_id: craftable.id, isPublicKey: true, account: addressContext.account });
+      // send an initiation to notify the server
+      let preCraft = await axios.post<ApiResult<string | { uuid: string, adminPublicKey: any[], txParams: any }>>
+                                      (
+                                        "/craft/pre", 
+                                        { 
+                                          nft_ids: allNftIds, 
+                                          craftable_id: craftable.id, 
+                                          isPublicKey: addressContext.isPublicKey, 
+                                          // use back the keyed in account for simplicity since every backend logic is handled by this
+                                          account: addressContext.isPublicKey? addressContext.account : addressContext.inputAccount 
+                                        }
+                                      );
       if(!preCraft.data.success) {
         return;
       }
@@ -243,7 +254,7 @@ function Detail({
       let adminPublicKey = preCraft.data.data.adminPublicKey;
       uuid = preCraft.data.data.uuid;
 
-
+      // changed to use shyft.to
       // {
       //     merkleTree: treeAddress.toBase58(),
       //     treeAuthority: treeAuthority.toBase58(),

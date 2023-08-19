@@ -306,7 +306,14 @@ export function HomeScreen() {
             setIsOnCooldown(true);
             startCountDown(COOLDOWN);
             setIsWaitingForResult(true);
-            await newHunt({ account: addressContext.account, isPublicKey: true });
+
+            // use back the keyed in account for simplicity since every backend logic is handled by this
+            await newHunt({ 
+                              account: addressContext.isPublicKey? addressContext.account : addressContext.inputAccount,
+                              isPublicKey: addressContext.isPublicKey 
+                          });
+
+            // get data after 2 seconds cause sometimes the rpcs have not yet indexed the transaction
             setTimeout(async() => {
               await runIfFunction(addressContext.getData);
               setIsWaitingForResult(false);
