@@ -1,6 +1,6 @@
 import { registerRootComponent } from "expo";
 import { RecoilRoot } from "recoil";
-import { ActivityIndicator, StyleSheet, View } from "react-native";
+import { ActivityIndicator, StyleSheet, View, Text, TextInput, Button, Image } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { MaterialCommunityIcons, Entypo } from "@expo/vector-icons";
@@ -11,10 +11,11 @@ import { HomeScreen } from "./screens/HomeScreen";
 import { InventoryScreen } from "./screens/InventoryScreen";
 import { ShopScreen } from "./screens/ShopScreen";
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
-import { Hunt, HuntResult, getAddressTokens, getHuntHistory, getAddressNfts } from "./helpers/api";
+import { Hunt, HuntResult, getAddressTokens, getHuntHistory, getAddressNfts, getPublicKeyForNonPublicKeyAccount } from "./helpers/api";
 import { usePublicKeys } from "./hooks/xnft-hooks";
 import { OnchainNFTDetails } from "./helpers/onchain";
 
+const logo = require('../assets/icon.png');
 const Tab = createBottomTabNavigator();
 
 function TabNavigator() {
@@ -122,10 +123,6 @@ const Banner = ({ left, right }: { left?: number, right?: number }) => {
 }
 
 function App() {
-  let [fontsLoaded] = useFonts({
-    Inter_900Black,
-  });
-
   const [ history, setHistory ] = useState<Hunt[]>([]);
   const [ account, setAccount ] = useState("");
   const [ monsters, setMonsters ] = useState<OnchainNFTDetails[]>([]);
@@ -133,10 +130,29 @@ function App() {
   const [ craftables, setCraftables ] = useState<OnchainNFTDetails[]>([]);
   const [ tokens, setTokens ] = useState({ gold: 0, exp: 0 });
   const [ isLoading, setIsLoading ] = useState(true);
+  const [ inputAccount, setInputAccount ] = useState("");
   const accounts = usePublicKeys();
+
+  const login = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      let account = await getPublicKeyForNonPublicKeyAccount(inputAccount);
+
+      if(!account) {
+        alert('Unable to login');
+        return;
+      }
+      setAccount(account);
+    }
+
+    catch {
+      alert('Unable to login');
+    }
+  }, [ inputAccount ]);
 
   const getData = useCallback(async() => {
     if(!account) {
+      setIsLoading(false);
       return;
     }
 
@@ -149,10 +165,7 @@ function App() {
         getAddressNfts(params),
       ]);
 
-      // 0.5s load time
-      setTimeout(() => {
-        setIsLoading(false);
-      }, 500);
+      setIsLoading(false);
 
       if(typeof hunts === "string") {
         setHistory([]);
@@ -200,8 +213,16 @@ function App() {
   }, [ account ]);
   
   useEffect(() => {
+    setIsLoading(true);
     getData();
   }, [ account ]);
+
+  useEffect(() => {
+    // 0.5s load time
+    setTimeout(() => {
+      setIsLoading(false);
+    }, 2000);
+  }, []);
 
   useEffect(() => {
     if(!accounts) {
@@ -217,19 +238,39 @@ function App() {
     setAccount(accounts.solana);
   }, [ accounts ]);
 
-  // need custom loader
-  if (!fontsLoaded) {
+  if(isLoading) {
     return (
       <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: 'white' }}>
+        <Text style={{ letterSpacing: 5, textTransform: 'uppercase', marginBottom: 15, fontSize: 15 }}>Logging In...</Text>
         <ActivityIndicator size={"large"}/>
       </View>
     );
   }
 
-  if(isLoading) {
+  if(!isLoading && !account) {
     return (
-      <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: 'white' }}>
-        <ActivityIndicator size={"large"}/>
+      <View style={{ alignItems: 'center', width: '100vw', height: '100vh', backgroundColor: 'white', overflow: 'hidden' }}>
+        <View style={{ maxWidth: 500, width: '100%', height: '100%', borderLeftWidth: 1, borderRightWidth: 1 }}>
+          <View style={{ flex: 1, alignItems: 'center', justifyContent: "center", backgroundColor: 'white', maxWidth: 500 }}>
+            <Image
+              source={logo}
+              style={{ width: 250, height: 250, marginBottom: 30 }}
+            />
+            <TextInput
+              value={inputAccount}
+              keyboardType="default"
+              onChange={({target}) => {
+                // must use as any if not it will throw error
+                setInputAccount((target as any).value);
+              }}
+              placeholder="Username"
+              style={{ width: '80%', borderWidth: 2, height: 40, borderRadius: 5, marginBottom: 10, paddingHorizontal: 15 }}
+            />
+            <View style={{ width: '80%'}}>
+              <Button onPress={login} title="Login"/>
+            </View>
+          </View>
+        </View>
       </View>
     );
   }
@@ -244,7 +285,7 @@ function App() {
           monsters, // address owned monsters
           tokens,
           account,
-          getData
+          getData,
         }}>
           <View style={{ alignItems: 'center', width: '100vw', height: '100vh', backgroundColor: 'white', overflow: 'hidden' }}>
             <View style={{ maxWidth: 500, width: '100%', height: '100%', borderLeftWidth: 1, borderRightWidth: 1 }}>

@@ -181,3 +181,14 @@ export const getCraftables = async() => {
         return "Error: " + e.response;
     }
 }
+
+export const getPublicKeyForNonPublicKeyAccount = async(account: string) => {
+    try {
+        let res = await axios.post<ApiResult<string>>('/onchain/publicKey', { account });
+        return res.data.data;
+    }
+
+    catch (e: any){
+        return null;
+    }
+}
