@@ -11,7 +11,10 @@
   "tag": "game",
   "contact": "https://twitter.com/darksoulsfanlol",
   "screenshots": [
-    "./assets/screenshot.png"
+    "./assets/screenshot.png",
+    "./assets/screenshot2.png",
+    "./assets/screenshot3.png",
+    "./assets/screenshot4.png"
   ],
   "entrypoints": {
     "default": {
