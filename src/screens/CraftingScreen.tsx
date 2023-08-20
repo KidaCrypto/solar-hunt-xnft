@@ -226,7 +226,7 @@ function Detail({
     let uuid = "";
     try {
       // send an initiation to notify the server
-      let preCraft = await axios.post<ApiResult<string | { uuid: string, adminPublicKey: any[], txParams: any }>>
+      let preCraft = await axios.post<ApiResult<string | { uuid: string, adminPublicKey: string, txParams: any }>>
                                       (
                                         "/craft/pre", 
                                         { 

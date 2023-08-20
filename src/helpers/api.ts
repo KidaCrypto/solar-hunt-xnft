@@ -79,13 +79,19 @@ export type CraftableRequirementByName = {
     value: number;
 }
   
-  export type Craftable = {
+export type Craftable = {
     id: number;
     name: string;
     img_file: string;
     skills?: CraftableSkill[];
     requirements?: CraftableRequirementByName[];
-  }
+}
+
+export type AccountMigration = {
+    id: number;
+    account: string;
+    migration_link: string;
+}
 
 export const newHunt = async(params: BaseParams) => {
     try {
@@ -175,6 +181,27 @@ export const getCraftables = async() => {
     try {
         let res = await axios.get<Craftable[]>('/craftable');
         return res.data;
+    }
+
+    catch (e: any){
+        return "Error: " + e.response;
+    }
+}
+// maybe get from wallet's rpc
+export const getAddressMigrationLinks = async(params: BaseParams) => {
+    try {
+        // key = "monster" | "loot" | "craftable"
+        let res = await axios.post<ApiResult<AccountMigration[]>>('/accountMigration/find', params);
+
+        if(!res.data.success) {
+            return "Error";
+        }
+
+        if(!res.data.data) {
+            return "Error";
+        }
+
+        return res.data.data;
     }
 
     catch (e: any){

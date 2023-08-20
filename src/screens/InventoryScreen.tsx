@@ -338,12 +338,12 @@ export const InventoryScreen = () => {
       <Stack.Screen
         name="List"
         component={List}
-        options={{ title: "Token List" }}
+        options={{ title: "Inventory" }}
       />
       <Stack.Screen
         name="Detail"
         component={Detail}
-        options={{ title: "Token Detail" }}
+        options={{ title: "Item Details" }}
       />
     </Stack.Navigator>
   );
